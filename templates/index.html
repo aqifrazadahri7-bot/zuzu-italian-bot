@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zuzu — Italian AI Speaking Partner</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #009246;
+    --red: #ce2b37;
+    --white: #ffffff;
+    --bg: #f4f1eb;
+    --card: #ffffff;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --border: #e8e2d8;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--green);
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .avatar {
+    width: 48px; height: 48px;
+    background: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .header-info h1 { font-size: 1.3em; font-weight: 700; }
+  .header-info p { font-size: 0.82em; opacity: 0.85; margin-top: 2px; }
+  .header-actions { margin-left: auto; display: flex; gap: 10px; }
+  .btn-ghost {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 7px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background 0.2s;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.25); }
+
+  /* ── Level badge ── */
+  .level-bar {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.83em;
+    color: #555;
+  }
+  .badge {
+    background: var(--green);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85em;
+  }
+  .tip { margin-left: auto; color: #888; font-style: italic; }
+
+  /* ── Level switcher ── */
+  .level-switcher { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+  .lvl-btn {
+    padding: 4px 14px;
+    border-radius: 14px;
+    border: 2px solid transparent;
+    font-size: 0.82em;
+    font-weight: 700;
+    cursor: pointer;
+    background: #f0f0f0;
+    color: #555;
+    transition: all 0.15s;
+    font-family: 'Arial', sans-serif;
+  }
+  .lvl-btn:hover { background: #e0e0e0; }
+  .lvl-btn.active { background: var(--green); color: white; border-color: var(--green); }
+  .lvl-btn.active-red { background: var(--red); color: white; border-color: var(--red); }
+  .level-changed {
+    font-size: 0.82em;
+    font-style: italic;
+    color: var(--green);
+    animation: fadeIn 0.3s ease;
+  }
+
+  /* ── Chat area ── */
+  .chat-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 820px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px 16px 0;
+    gap: 0;
+  }
+
+  #chat-box {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-bottom: 20px;
+    min-height: 300px;
+    max-height: calc(100vh - 280px);
+  }
+
+  /* ── Messages ── */
+  .msg { display: flex; gap: 10px; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .msg.user { flex-direction: row-reverse; }
+  .msg-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .msg.user .msg-avatar { background: var(--red); color: white; font-size: 14px; font-weight: bold; }
+  .msg.bot .msg-avatar { background: var(--green); color: white; }
+
+  .msg-body { max-width: 78%; display: flex; flex-direction: column; gap: 8px; }
+  .msg.user .msg-body { align-items: flex-end; }
+
+  .bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 0.97em;
+    line-height: 1.6;
+  }
+  .msg.user .bubble {
+    background: var(--red);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.bot .bubble.italian {
+    background: white;
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    box-shadow: var(--shadow);
+    font-size: 1.05em;
+    color: #1a1a1a;
+  }
+  .correction-box {
+    background: #fffbf0;
+    border: 1px solid #f0d070;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.87em;
+    color: #5a4500;
+    line-height: 1.5;
+  }
+  .correction-box .correction-label {
+    font-weight: 700;
+    color: #9a6500;
+    margin-bottom: 4px;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .correction-box.perfect {
+    background: #f0faf0;
+    border-color: #a0d8a0;
+    color: #1a4a1a;
+  }
+  .correction-box.perfect .correction-label { color: #2a7a2a; }
+
+  /* ── Typing indicator ── */
+  .typing-indicator { display: none; }
+  .typing-indicator.active { display: flex; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #aaa; animation: bounce 1.2s infinite; margin: 0 2px; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+  /* ── Input area ── */
+  .input-area {
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 16px;
+    position: sticky;
+    bottom: 0;
+  }
+  .input-inner {
+    max-width: 820px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  #user-input {
+    flex: 1;
+    border: 2px solid var(--border);
+    border-radius: 24px;
+    padding: 12px 20px;
+    font-size: 0.97em;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+    max-height: 120px;
+    min-height: 48px;
+  }
+  #user-input:focus { border-color: var(--green); }
+
+  .btn-send, .btn-mic {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.15s, background 0.2s;
+  }
+  .btn-send { background: var(--green); color: white; }
+  .btn-send:hover { background: #007a3a; transform: scale(1.05); }
+  .btn-mic { background: #f0f0f0; color: #444; }
+  .btn-mic:hover { background: #e0e0e0; }
+  .btn-mic.recording { background: var(--red); color: white; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(206,43,55,0.4); } 50% { box-shadow: 0 0 0 10px rgba(206,43,55,0); } }
+
+  /* ── Phrase suggestions ── */
+  .suggestions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .suggestion-chip {
+    background: #f0faf0;
+    border: 1px solid #b0d8b0;
+    color: #1a5a1a;
+    padding: 5px 13px;
+    border-radius: 16px;
+    font-size: 0.82em;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-style: italic;
+  }
+  .suggestion-chip:hover { background: #d0f0d0; }
+
+  /* ── Speak button on bot messages ── */
+  .speak-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--green);
+    padding: 2px 6px;
+    border-radius: 6px;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+  }
+  .speak-btn:hover { opacity: 1; }
+
+  /* ── Status bar ── */
+  #status-bar {
+    text-align: center;
+    font-size: 0.82em;
+    color: #888;
+    padding: 4px;
+    min-height: 22px;
+  }
+  #status-bar.error { color: var(--red); }
+  #status-bar.recording { color: var(--red); font-weight: 600; }
+
+  /* ── Welcome message ── */
+  .welcome {
+    text-align: center;
+    padding: 30px 20px;
+    color: #666;
+  }
+  .welcome .flag { font-size: 40px; margin-bottom: 10px; }
+  .welcome h2 { color: var(--green); margin-bottom: 8px; }
+  .welcome p { font-size: 0.92em; max-width: 400px; margin: 0 auto; line-height: 1.6; }
+
+  @media (max-width: 600px) {
+    .tip { display: none; }
+    .msg-body { max-width: 90%; }
+  }
+
+  /* ── API Key overlay ── */
+  #key-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+  }
+  #key-overlay.show { display: flex; }
+  .key-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 36px;
+    max-width: 460px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    text-align: center;
+  }
+  .key-card .flag { font-size: 40px; margin-bottom: 12px; }
+  .key-card h2 { color: var(--green); margin-bottom: 8px; font-size: 1.4em; }
+  .key-card p { color: #666; font-size: 0.9em; margin-bottom: 20px; line-height: 1.6; }
+  .key-card a { color: var(--green); font-weight: 600; }
+  .key-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .key-input-row input {
+    flex: 1;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.9em;
+    font-family: monospace;
+    outline: none;
+  }
+  .key-input-row input:focus { border-color: var(--green); }
+  .btn-save-key {
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 0.95em;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .btn-save-key:hover { background: #007a3a; }
+  .btn-save-key:disabled { background: #aaa; cursor: not-allowed; }
+  #key-error { color: var(--red); font-size: 0.85em; min-height: 20px; }
+  #key-checking { color: #888; font-size: 0.85em; display: none; }
+</style>
+</head>
+<body>
+
+<!-- API Key Overlay -->
+<div id="key-overlay">
+  <div class="key-card">
+    <div class="flag">🇮🇹</div>
+    <h2>Welcome to Zuzu!</h2>
+    <p>You need a <strong>free Google Gemini API key</strong> to start.<br>
+      1. Go to <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a><br>
+      2. Click <strong>Get API Key → Create API Key</strong><br>
+      3. Copy and paste it below
+    </p>
+    <div class="key-input-row">
+      <input type="text" id="key-input" placeholder="Paste your AIzaSy... key here" />
+      <button class="btn-save-key" id="save-key-btn" onclick="saveKey()">Save</button>
+    </div>
+    <div id="key-error"></div>
+    <div id="key-checking">⏳ Checking key...</div>
+  </div>
+</div>
+
+<header>
+  <div class="avatar">🇮🇹</div>
+  <div class="header-info">
+    <h1>Zuzu — Il Tuo Tutor Italiano</h1>
+    <p>AI Speaking Partner · Voice-First</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn-ghost" onclick="resetChat()">↺ New Chat</button>
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 12px;">
+      {% if user_picture %}
+      <img src="{{ user_picture }}" style="width:26px;height:26px;border-radius:50%;border:2px solid white;" referrerpolicy="no-referrer">
+      {% endif %}
+      <span style="font-size:0.85em;color:white;">{{ user_name }}</span>
+      <a href="/logout" style="color:rgba(255,255,255,0.75);font-size:0.78em;text-decoration:none;margin-left:4px;" title="Sign out">✕</a>
+    </div>
+  </div>
+</header>
+
+<div class="level-bar">
+  <span>Level:</span>
+  <div class="level-switcher">
+    <button class="lvl-btn" data-level="A1" onclick="setLevel('A1')">A1</button>
+    <button class="lvl-btn" data-level="A2" onclick="setLevel('A2')">A2</button>
+    <button class="lvl-btn active" data-level="B1" onclick="setLevel('B1')">B1</button>
+    <button class="lvl-btn" data-level="B2" onclick="setLevel('B2')">B2</button>
+  </div>
+  <span id="level-label" class="level-changed" style="margin-left:10px;">B1 — Active</span>
+  <span class="tip">Tip: Click 🔊 to hear Zuzu speak in Italian</span>
+</div>
+
+<div class="chat-wrap">
+  <div id="chat-box">
+    <div class="welcome" id="welcome-msg">
+      <div class="flag">🇮🇹</div>
+      <h2>Ciao! Sono Zuzu.</h2>
+      <p>Il tuo assistente per l'italiano. Parla o scrivi in italiano — ti rispondo, ti correggo gentilmente, e continuiamo la conversazione.<br><br>Press the 🎤 mic button to speak, or type below.</p>
+    </div>
+  </div>
+
+  <div class="msg bot typing-indicator" id="typing">
+    <div class="msg-avatar">🇮🇹</div>
+    <div class="msg-body">
+      <div class="bubble italian" style="padding: 14px 18px;">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="input-area">
+  <div class="input-inner">
+    <div class="suggestions" id="suggestions">
+      <span class="suggestion-chip" onclick="useSuggestion(this)">Come stai?</span>
+      <span class="suggestion-chip" onclick="useSuggestion(this)">Cosa hai fatto ieri?</span>
+      <span class="suggestion-chip" onclick="useSuggestion(this)">Mi puoi aiutare con la grammatica?</span>
+      <span class="suggestion-chip" onclick="useSuggestion(this)">Parliamo di cibo italiano!</span>
+    </div>
+    <div class="input-row">
+      <textarea id="user-input" rows="1" placeholder="Scrivi in italiano... (or speak with 🎤)" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="btn-mic" id="mic-btn" onclick="toggleMic()" title="Hold to speak">🎤</button>
+      <button class="btn-send" onclick="sendMessage()" title="Send">➤</button>
+    </div>
+    <div id="status-bar"></div>
+  </div>
+</div>
+
+<script>
+  // ── Level switcher ──
+  let currentLevel = 'B1';
+
+  const levelColors = { A1: 'active-red', A2: 'active-red', B1: 'active', B2: 'active' };
+  const levelDesc = {
+    A1: 'A1 — Beginner',
+    A2: 'A2 — Elementary',
+    B1: 'B1 — Intermediate',
+    B2: 'B2 — Upper-Intermediate'
+  };
+
+  function setLevel(level) {
+    currentLevel = level;
+    document.querySelectorAll('.lvl-btn').forEach(btn => {
+      btn.classList.remove('active', 'active-red');
+      if (btn.dataset.level === level) btn.classList.add(levelColors[level]);
+    });
+    const label = document.getElementById('level-label');
+    label.textContent = levelDesc[level] + ' — Active';
+    label.style.color = (level === 'A1' || level === 'A2') ? 'var(--red)' : 'var(--green)';
+
+    // Notify in chat
+    const notif = document.createElement('div');
+    notif.style.cssText = 'text-align:center;font-size:0.82em;color:#888;padding:4px 0;font-style:italic;animation:fadeIn 0.3s ease';
+    notif.textContent = `⚙ Level switched to ${levelDesc[level]}`;
+    chatBox.appendChild(notif);
+    scrollBottom();
+  }
+
+  // ── API Key overlay ──
+  function showKeyOverlay() {
+    document.getElementById('key-overlay').classList.add('show');
+    setTimeout(() => document.getElementById('key-input').focus(), 100);
+  }
+
+  async function saveKey() {
+    const key = document.getElementById('key-input').value.trim();
+    const errEl = document.getElementById('key-error');
+    const checkEl = document.getElementById('key-checking');
+    const btn = document.getElementById('save-key-btn');
+
+    if (!key) { errEl.textContent = 'Please paste your API key.'; return; }
+
+    errEl.textContent = '';
+    checkEl.style.display = 'block';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/setkey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key })
+      });
+      const data = await res.json();
+      checkEl.style.display = 'none';
+      btn.disabled = false;
+
+      if (data.status === 'ok') {
+        document.getElementById('key-overlay').classList.remove('show');
+        startGreeting();
+      } else {
+        errEl.textContent = data.error || 'Invalid key. Please check and try again.';
+      }
+    } catch (e) {
+      checkEl.style.display = 'none';
+      btn.disabled = false;
+      errEl.textContent = 'Connection error. Is the server running?';
+    }
+  }
+
+  document.getElementById('key-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveKey();
+  });
+
+  const chatBox = document.getElementById('chat-box');
+  const userInput = document.getElementById('user-input');
+  const typingIndicator = document.getElementById('typing');
+  const statusBar = document.getElementById('status-bar');
+  const micBtn = document.getElementById('mic-btn');
+
+  let isRecording = false;
+  let recognition = null;
+  let synth = window.speechSynthesis;
+  let currentUtterance = null;
+
+  // ── Speech Recognition setup ──
+  function setupRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      micBtn.title = "Speech recognition not supported in this browser";
+      micBtn.style.opacity = "0.4";
+      return null;
+    }
+    const r = new SpeechRecognition();
+    r.lang = 'it-IT';
+    r.continuous = false;
+    r.interimResults = true;
+
+    r.onstart = () => {
+      isRecording = true;
+      micBtn.classList.add('recording');
+      micBtn.textContent = '⏹';
+      setStatus('🎤 Listening... speak in Italian', 'recording');
+    };
+
+    r.onresult = (e) => {
+      const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+      userInput.value = transcript;
+      autoResize(userInput);
+      if (e.results[e.results.length - 1].isFinal) {
+        stopRecognition();
+        setTimeout(() => sendMessage(), 300);
+      }
+    };
+
+    r.onerror = (e) => {
+      stopRecognition();
+      if (e.error !== 'aborted') setStatus('Mic error: ' + e.error, 'error');
+    };
+
+    r.onend = () => stopRecognition();
+    return r;
+  }
+
+  function stopRecognition() {
+    isRecording = false;
+    micBtn.classList.remove('recording');
+    micBtn.textContent = '🎤';
+    setStatus('');
+    if (recognition) recognition.stop();
+  }
+
+  function toggleMic() {
+    if (isRecording) { stopRecognition(); return; }
+    if (!recognition) recognition = setupRecognition();
+    if (!recognition) { setStatus('Speech recognition not supported. Use Chrome or Edge.', 'error'); return; }
+    recognition.start();
+  }
+
+  // ── TTS: Speak Italian text ──
+  function speakItalian(text) {
+    if (!synth) return;
+    if (synth.speaking) synth.cancel();
+    const clean = text.replace(/[*_~`#]/g, '');
+    const utt = new SpeechSynthesisUtterance(clean);
+    utt.lang = 'it-IT';
+    utt.rate = 0.88;
+    utt.pitch = 1.0;
+
+    const voices = synth.getVoices();
+    const italianVoice = voices.find(v => v.lang.startsWith('it'));
+    if (italianVoice) utt.voice = italianVoice;
+
+    currentUtterance = utt;
+    synth.speak(utt);
+  }
+
+  // ── Send message ──
+  async function sendMessage() {
+    const msg = userInput.value.trim();
+    if (!msg) return;
+
+    document.getElementById('welcome-msg')?.remove();
+    userInput.value = '';
+    autoResize(userInput);
+
+    appendMessage('user', msg);
+    showTyping(true);
+    setStatus('');
+
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, level: currentLevel })
+      });
+
+      const data = await res.json();
+      showTyping(false);
+
+      if (data.no_key) { showKeyOverlay(); return; }
+      if (data.error) {
+        setStatus('Error: ' + data.error, 'error');
+        return;
+      }
+
+      appendBotMessage(data.italian, data.correction);
+      speakItalian(data.italian);
+
+    } catch (err) {
+      showTyping(false);
+      setStatus('Connection error. Make sure the server is running.', 'error');
+    }
+  }
+
+  // ── Render messages ──
+  function appendMessage(role, text) {
+    const msg = document.createElement('div');
+    msg.className = `msg ${role}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = role === 'user' ? 'You' : '🇮🇹';
+
+    const body = document.createElement('div');
+    body.className = 'msg-body';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (role === 'user' ? '' : 'italian');
+    bubble.textContent = text;
+
+    body.appendChild(bubble);
+    msg.appendChild(avatar);
+    msg.appendChild(body);
+    chatBox.appendChild(msg);
+    scrollBottom();
+  }
+
+  function appendBotMessage(italianText, correctionText) {
+    const msg = document.createElement('div');
+    msg.className = 'msg bot';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = '🇮🇹';
+
+    const body = document.createElement('div');
+    body.className = 'msg-body';
+
+    // Italian response bubble
+    const italianBubble = document.createElement('div');
+    italianBubble.className = 'bubble italian';
+
+    const textSpan = document.createElement('span');
+    textSpan.textContent = italianText;
+
+    const speakBtn = document.createElement('button');
+    speakBtn.className = 'speak-btn';
+    speakBtn.textContent = ' 🔊';
+    speakBtn.title = 'Hear Zuzu speak';
+    speakBtn.onclick = () => speakItalian(italianText);
+
+    italianBubble.appendChild(textSpan);
+    italianBubble.appendChild(speakBtn);
+    body.appendChild(italianBubble);
+
+    // Correction box
+    if (correctionText) {
+      const corrBox = document.createElement('div');
+      const isPerfect = correctionText.includes('✓') || correctionText.toLowerCase().includes('perfect') || correctionText.toLowerCase().includes('no correction');
+      corrBox.className = 'correction-box' + (isPerfect ? ' perfect' : '');
+
+      const label = document.createElement('div');
+      label.className = 'correction-label';
+      label.textContent = isPerfect ? '✓ Grammar Check' : '📝 Correction';
+
+      const content = document.createElement('div');
+      content.textContent = correctionText;
+
+      corrBox.appendChild(label);
+      corrBox.appendChild(content);
+      body.appendChild(corrBox);
+    }
+
+    msg.appendChild(avatar);
+    msg.appendChild(body);
+    chatBox.appendChild(msg);
+    scrollBottom();
+  }
+
+  // ── Helpers ──
+  function showTyping(show) {
+    typingIndicator.className = 'msg bot typing-indicator' + (show ? ' active' : '');
+    if (show) scrollBottom();
+  }
+
+  function scrollBottom() {
+    setTimeout(() => chatBox.scrollTop = chatBox.scrollHeight, 50);
+  }
+
+  function setStatus(msg, type = '') {
+    statusBar.textContent = msg;
+    statusBar.className = type;
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function useSuggestion(el) {
+    userInput.value = el.textContent;
+    userInput.focus();
+  }
+
+  function resetChat() {
+    fetch('/reset', { method: 'POST' });
+    chatBox.innerHTML = `<div class="welcome" id="welcome-msg">
+      <div class="flag">🇮🇹</div>
+      <h2>Ciao! Sono Zuzu.</h2>
+      <p>Nuova conversazione iniziata! Parla o scrivi per iniziare.</p>
+    </div>`;
+    setStatus('');
+  }
+
+  // Load voices on page load
+  synth.onvoiceschanged = () => synth.getVoices();
+
+  function startGreeting() {
+    showTyping(true);
+    fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: "Ciao Zuzu! Iniziamo la nostra conversazione." })
+    })
+    .then(r => r.json())
+    .then(data => {
+      showTyping(false);
+      document.getElementById('welcome-msg')?.remove();
+      if (data.no_key) { showKeyOverlay(); return; }
+      if (data.italian) {
+        appendBotMessage(data.italian, data.correction);
+        speakItalian(data.italian);
+      }
+    })
+    .catch(() => showTyping(false));
+  }
+
+  // On load: check if key exists, otherwise show overlay
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: "Ciao Zuzu! Iniziamo la nostra conversazione.", level: currentLevel })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.no_key) { showKeyOverlay(); return; }
+        document.getElementById('welcome-msg')?.remove();
+        if (data.italian) {
+          appendBotMessage(data.italian, data.correction);
+          speakItalian(data.italian);
+        }
+      })
+      .catch(() => {});
+    }, 800);
+  });
+</script>
+</body>
+</html>

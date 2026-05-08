@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zuzu — Italian AI Speaking Partner</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #009246 0%, #009246 33%, #ffffff 33%, #ffffff 66%, #ce2b37 66%, #ce2b37 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: white;
+    border-radius: 24px;
+    padding: 52px 44px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+    text-align: center;
+  }
+  .logo { font-size: 56px; margin-bottom: 6px; }
+  .brand { font-size: 2.2em; font-weight: 800; color: #009246; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .tagline { color: #888; font-size: 0.95em; margin-bottom: 32px; line-height: 1.5; }
+  .features {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 36px;
+    text-align: left;
+  }
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fdf8;
+    border: 1px solid #d0ead0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.88em;
+    color: #333;
+  }
+  .feature .icon { font-size: 18px; flex-shrink: 0; }
+  .divider {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 0 0 28px;
+  }
+  .google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 50px;
+    padding: 14px 24px;
+    font-size: 1em;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .google-btn:hover {
+    border-color: #009246;
+    box-shadow: 0 4px 16px rgba(0,146,70,0.15);
+    transform: translateY(-1px);
+  }
+  .google-logo {
+    width: 22px;
+    height: 22px;
+  }
+  .footer-note {
+    margin-top: 20px;
+    font-size: 0.78em;
+    color: #bbb;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🇮🇹</div>
+  <div class="brand">Zuzu</div>
+  <p class="tagline">Your personal Italian AI speaking partner.<br>Practice anytime, get corrected gently.</p>
+
+  <div class="features">
+    <div class="feature"><span class="icon">🎤</span><span>Speak in Italian — voice input &amp; output</span></div>
+    <div class="feature"><span class="icon">📝</span><span>Grammar corrections after every response</span></div>
+    <div class="feature"><span class="icon">🎯</span><span>Switch levels: A1 · A2 · B1 · B2 anytime</span></div>
+    <div class="feature"><span class="icon">🤖</span><span>Powered by Gemini 2.5 Flash AI</span></div>
+  </div>
+
+  <hr class="divider">
+
+  <a href="/auth/google" class="google-btn">
+    <svg class="google-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+    Continue with Google
+  </a>
+
+  <p class="footer-note">By signing in, you agree to use Zuzu responsibly.<br>Your conversations are private to your account.</p>
+</div>
+</body>
+</html>
