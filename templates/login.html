@@ -3,115 +3,365 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zuzu — Italian AI Speaking Partner</title>
+<title>Zuzu — Learn Italian with AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: linear-gradient(135deg, #009246 0%, #009246 33%, #ffffff 33%, #ffffff 66%, #ce2b37 66%, #ce2b37 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .card {
-    background: white;
-    border-radius: 24px;
-    padding: 52px 44px;
-    max-width: 420px;
-    width: 100%;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.18);
-    text-align: center;
-  }
-  .logo { font-size: 56px; margin-bottom: 6px; }
-  .brand { font-size: 2.2em; font-weight: 800; color: #009246; letter-spacing: -0.5px; margin-bottom: 4px; }
-  .tagline { color: #888; font-size: 0.95em; margin-bottom: 32px; line-height: 1.5; }
-  .features {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 36px;
-    text-align: left;
-  }
-  .feature {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #f8fdf8;
-    border: 1px solid #d0ead0;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.88em;
-    color: #333;
-  }
-  .feature .icon { font-size: 18px; flex-shrink: 0; }
-  .divider {
-    border: none;
-    border-top: 1px solid #eee;
-    margin: 0 0 28px;
-  }
-  .google-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    width: 100%;
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 50px;
-    padding: 14px 24px;
-    font-size: 1em;
-    font-weight: 600;
-    color: #333;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  }
-  .google-btn:hover {
-    border-color: #009246;
-    box-shadow: 0 4px 16px rgba(0,146,70,0.15);
-    transform: translateY(-1px);
-  }
-  .google-logo {
-    width: 22px;
-    height: 22px;
-  }
-  .footer-note {
-    margin-top: 20px;
-    font-size: 0.78em;
-    color: #bbb;
-    line-height: 1.5;
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* ── Animated background ── */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  animation: float 8s ease-in-out infinite;
+}
+.bg-blob:nth-child(1) { width: 600px; height: 600px; background: #009246; top: -200px; left: -200px; animation-delay: 0s; }
+.bg-blob:nth-child(2) { width: 500px; height: 500px; background: #ce2b37; bottom: -150px; right: -150px; animation-delay: 3s; }
+.bg-blob:nth-child(3) { width: 400px; height: 400px; background: #4f46e5; top: 40%; left: 50%; animation-delay: 1.5s; }
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -30px) scale(1.05); }
+}
+
+/* ── Layout ── */
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+/* ── Left panel ── */
+.left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 70px;
+}
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 60px;
+}
+.logo-icon { font-size: 36px; }
+.logo-text { font-size: 1.5em; font-weight: 800; letter-spacing: -0.5px; }
+.logo-text span { color: #009246; }
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,146,70,0.15);
+  border: 1px solid rgba(0,146,70,0.3);
+  color: #4ade80;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: 600;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+.hero-tag .dot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+h1 {
+  font-size: 3.4em;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+h1 .highlight {
+  background: linear-gradient(135deg, #009246, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-desc {
+  font-size: 1.05em;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.7;
+  max-width: 420px;
+  margin-bottom: 44px;
+}
+
+.stats {
+  display: flex;
+  gap: 36px;
+  margin-bottom: 50px;
+}
+.stat-num { font-size: 1.8em; font-weight: 800; color: #fff; }
+.stat-label { font-size: 0.78em; color: rgba(255,255,255,0.45); margin-top: 2px; }
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.feat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9em;
+  color: rgba(255,255,255,0.75);
+}
+.feat-icon {
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+/* ── Right panel ── */
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 48px 44px;
+  width: 100%;
+  max-width: 420px;
+}
+.card-title {
+  font-size: 1.6em;
+  font-weight: 800;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+.card-subtitle {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.9em;
+  margin-bottom: 36px;
+  line-height: 1.5;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+.level-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.level-card:hover { border-color: #009246; background: rgba(0,146,70,0.1); }
+.level-badge { font-size: 0.7em; font-weight: 700; color: #009246; letter-spacing: 1px; margin-bottom: 4px; }
+.level-name { font-size: 0.78em; color: rgba(255,255,255,0.5); }
+
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 28px;
+  color: rgba(255,255,255,0.25);
+  font-size: 0.8em;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  background: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 15px 24px;
+  font-size: 0.97em;
+  font-weight: 600;
+  color: #1a1a1a;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+.google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+.google-btn:active { transform: translateY(0); }
+
+.terms {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.75em;
+  color: rgba(255,255,255,0.25);
+  line-height: 1.6;
+}
+
+/* ── Floating chat preview ── */
+.chat-preview {
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.preview-msg {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.preview-msg.user { flex-direction: row-reverse; }
+.preview-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #009246;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.preview-msg.user .preview-avatar { background: #ce2b37; font-size: 10px; font-weight: 700; }
+.preview-bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.83em;
+  line-height: 1.5;
+  max-width: 80%;
+}
+.preview-msg.bot .preview-bubble { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); }
+.preview-msg.user .preview-bubble { background: #ce2b37; color: white; }
+.preview-correction {
+  background: rgba(255,200,50,0.1);
+  border: 1px solid rgba(255,200,50,0.2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.75em;
+  color: rgba(255,220,100,0.8);
+  margin-left: 38px;
+}
+
+@media (max-width: 900px) {
+  .page { grid-template-columns: 1fr; }
+  .left { display: none; }
+  .right { padding: 24px; min-height: 100vh; }
+  .card { max-width: 100%; }
+}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="logo">🇮🇹</div>
-  <div class="brand">Zuzu</div>
-  <p class="tagline">Your personal Italian AI speaking partner.<br>Practice anytime, get corrected gently.</p>
+<div class="bg">
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+</div>
 
-  <div class="features">
-    <div class="feature"><span class="icon">🎤</span><span>Speak in Italian — voice input &amp; output</span></div>
-    <div class="feature"><span class="icon">📝</span><span>Grammar corrections after every response</span></div>
-    <div class="feature"><span class="icon">🎯</span><span>Switch levels: A1 · A2 · B1 · B2 anytime</span></div>
-    <div class="feature"><span class="icon">🤖</span><span>Powered by Gemini 2.5 Flash AI</span></div>
+<div class="page">
+  <!-- LEFT -->
+  <div class="left">
+    <div class="logo-row">
+      <span class="logo-icon">🇮🇹</span>
+      <span class="logo-text">Zu<span>zu</span></span>
+    </div>
+
+    <div class="hero-tag"><span class="dot"></span> AI-Powered · Free · No Downloads</div>
+
+    <h1>Speak Italian<br>with <span class="highlight">confidence</span></h1>
+
+    <p class="hero-desc">Your personal AI language partner. Practice real conversations, get instant grammar corrections, and level up from A1 to B2 — all in your browser.</p>
+
+    <div class="stats">
+      <div>
+        <div class="stat-num">4</div>
+        <div class="stat-label">CEFR Levels</div>
+      </div>
+      <div>
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Conversations</div>
+      </div>
+      <div>
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">Always Online</div>
+      </div>
+    </div>
+
+    <div class="features-list">
+      <div class="feat"><div class="feat-icon">🎤</div> Voice input & Italian text-to-speech output</div>
+      <div class="feat"><div class="feat-icon">📝</div> Gentle grammar corrections after every reply</div>
+      <div class="feat"><div class="feat-icon">🎯</div> Switch levels A1 · A2 · B1 · B2 anytime</div>
+      <div class="feat"><div class="feat-icon">🤖</div> Powered by Gemini 2.5 Flash AI</div>
+    </div>
   </div>
 
-  <hr class="divider">
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="card">
+      <div class="card-title">Start learning today</div>
+      <div class="card-subtitle">Sign in to save your progress and start your Italian journey.</div>
 
-  <a href="/auth/google" class="google-btn">
-    <svg class="google-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-    </svg>
-    Continue with Google
-  </a>
+      <!-- Chat preview -->
+      <div class="chat-preview">
+        <div class="preview-msg bot">
+          <div class="preview-avatar">🇮🇹</div>
+          <div class="preview-bubble">Ciao! Come stai oggi? Parliamo un po'!</div>
+        </div>
+        <div class="preview-msg user">
+          <div class="preview-avatar">You</div>
+          <div class="preview-bubble">Io sono bene, grazie!</div>
+        </div>
+        <div class="preview-correction">📝 Small fix: "Sto bene" not "Sono bene" — use <em>stare</em> for health/feelings.</div>
+        <div class="preview-msg bot">
+          <div class="preview-avatar">🇮🇹</div>
+          <div class="preview-bubble">Perfetto! Quasi giusto 🎉 Cosa hai fatto ieri?</div>
+        </div>
+      </div>
 
-  <p class="footer-note">By signing in, you agree to use Zuzu responsibly.<br>Your conversations are private to your account.</p>
+      <div class="level-grid">
+        <div class="level-card"><div class="level-badge">A1</div><div class="level-name">Beginner</div></div>
+        <div class="level-card"><div class="level-badge">A2</div><div class="level-name">Elementary</div></div>
+        <div class="level-card"><div class="level-badge">B1</div><div class="level-name">Intermediate</div></div>
+        <div class="level-card"><div class="level-badge">B2</div><div class="level-name">Upper-Inter.</div></div>
+      </div>
+
+      <div class="divider">Continue with</div>
+
+      <a href="/auth/google" class="google-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Sign in with Google
+      </a>
+
+      <p class="terms">Free forever · No credit card · Your data stays private</p>
+    </div>
+  </div>
 </div>
 </body>
 </html>
