@@ -257,6 +257,45 @@ def login_required(f):
 
 # ── Auth routes ──
 
+MOBILE_KEY = 'zuzu-mobile-key-2024'
+
+@app.route('/api/mobile/chat', methods=['POST'])
+def mobile_chat():
+    if request.headers.get('X-API-Key') != MOBILE_KEY:
+        return jsonify({'error': 'Unauthorized'}), 401
+    data = request.get_json()
+    user_message = data.get('message', '').strip()
+    level = data.get('level', 'B1').upper()
+    session_id = data.get('session_id', 'mobile-default')
+    if not user_message:
+        return jsonify({'error': 'Empty message'}), 400
+    model, err = get_model(level)
+    if err == 'NO_KEY':
+        return jsonify({'error': 'API key not configured'}), 500
+    if err:
+        return jsonify({'error': err}), 500
+    if session_id not in conversation_histories:
+        conversation_histories[session_id] = []
+    history = conversation_histories[session_id]
+    gemini_history = [
+        {'role': 'user' if m['role'] == 'user' else 'model', 'parts': [m['content']]}
+        for m in history[-20:]
+    ]
+    chat_session = model.start_chat(history=gemini_history)
+    response = chat_session.send_message(user_message)
+    reply = response.text
+    conversation_histories[session_id].append({'role': 'user', 'content': user_message})
+    conversation_histories[session_id].append({'role': 'assistant', 'content': reply})
+    italian_part = correction_part = ''
+    if '---ITALIAN---' in reply and '---CORRECTION---' in reply:
+        parts = reply.split('---CORRECTION---')
+        italian_part = parts[0].replace('---ITALIAN---', '').strip()
+        correction_part = parts[1].strip() if len(parts) > 1 else ''
+    else:
+        italian_part = reply
+    return jsonify({'italian': italian_part, 'correction': correction_part})
+
+
 @app.route('/robots.txt')
 def robots():
     return app.send_static_file('robots.txt')
