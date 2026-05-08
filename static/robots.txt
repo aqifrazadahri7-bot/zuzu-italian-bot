@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /dev-login
+
+Sitemap: https://zuzu-italian-bot.onrender.com/static/sitemap.xml
