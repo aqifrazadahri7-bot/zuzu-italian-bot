@@ -217,6 +217,16 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/dev-login')
+def dev_login():
+    """Quick local login bypass for development."""
+    session['user_id'] = 'dev-user-001'
+    session['user_name'] = 'Aqif Raza'
+    session['user_email'] = 'aqifrazadahri7@gmail.com'
+    session['user_picture'] = ''
+    return redirect(url_for('index'))
+
+
 @app.route('/auth/google')
 def auth_google():
     redirect_uri = url_for('auth_callback', _external=True)
