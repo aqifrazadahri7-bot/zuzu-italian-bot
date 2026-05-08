@@ -1,14 +1,19 @@
 {
   "name": "Zuzu — Italian AI Tutor",
   "short_name": "Zuzu",
-  "description": "Your personal Italian AI speaking partner",
+  "description": "Learn Italian free with AI. A1 to B1 in 30 days.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#009246",
+  "background_color": "#0C0C0C",
+  "theme_color": "#5E6AD2",
   "orientation": "portrait-primary",
+  "categories": ["education", "language"],
   "icons": [
-    { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/static/img/zuzu-bird.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/static/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/static/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [
+    { "src": "/static/img/zuzu-bird.svg", "sizes": "512x512", "type": "image/svg+xml" }
   ]
 }
