@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zuzu — Libri Facili</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #009246; --green-light: #4ade80; --red: #ce2b37;
+  --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #222;
+  --border: rgba(255,255,255,0.08); --text: #f0f0f0; --muted: rgba(255,255,255,0.45);
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── Header ── */
+header {
+  height: 60px; background: rgba(15,15,15,0.95); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 24px; gap: 24px;
+  position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
+}
+.h-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.h-logo span { font-size: 22px; }
+.h-logo strong { font-size: 1.1em; font-weight: 800; color: var(--text); }
+.h-logo strong em { color: var(--green); font-style: normal; }
+nav { display: flex; gap: 4px; }
+.nav-link {
+  padding: 6px 14px; border-radius: 8px; font-size: 0.85em; font-weight: 500;
+  text-decoration: none; color: var(--muted); transition: all 0.15s;
+}
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.nav-link.active { color: var(--text); background: rgba(255,255,255,0.08); }
+.h-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.user-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px 5px 5px;
+}
+.user-pill img { width: 26px; height: 26px; border-radius: 50%; }
+.user-pill span { font-size: 0.82em; font-weight: 500; }
+.btn-logout {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 8px; padding: 5px 10px; font-size: 0.78em; cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* ── Main layout ── */
+.page { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 60px); }
+
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--surface); border-right: 1px solid var(--border);
+  padding: 24px 16px; display: flex; flex-direction: column; gap: 8px;
+  position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto;
+}
+.sidebar-title { font-size: 0.7em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); padding: 8px 10px 4px; }
+.book-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; border-radius: 10px; cursor: pointer;
+  transition: all 0.15s; border: 1px solid transparent;
+}
+.book-item:hover { background: rgba(255,255,255,0.04); }
+.book-item.active { background: rgba(0,146,70,0.1); border-color: rgba(0,146,70,0.2); }
+.book-num {
+  width: 28px; height: 28px; border-radius: 7px; font-size: 0.7em; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.lvl-a1 .book-num { background: rgba(74,222,128,0.15); color: #4ade80; }
+.lvl-a2 .book-num { background: rgba(96,165,250,0.15); color: #60a5fa; }
+.book-info { flex: 1; min-width: 0; }
+.book-title-sm { font-size: 0.83em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.book-meta-sm { font-size: 0.72em; color: var(--muted); margin-top: 2px; }
+.level-pill {
+  font-size: 0.65em; font-weight: 700; padding: 2px 7px; border-radius: 6px; flex-shrink: 0;
+  margin-top: 3px;
+}
+.pill-a1 { background: rgba(74,222,128,0.15); color: #4ade80; }
+.pill-a2 { background: rgba(96,165,250,0.15); color: #60a5fa; }
+.sidebar-sep { height: 1px; background: var(--border); margin: 8px 0; }
+
+/* ── Reader ── */
+.reader { padding: 40px; overflow-y: auto; max-height: calc(100vh - 60px); }
+
+/* Library view */
+.library { display: none; }
+.library.show { display: block; }
+.lib-hero { margin-bottom: 40px; }
+.lib-hero h1 { font-size: 2em; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+.lib-hero p { color: var(--muted); font-size: 0.95em; }
+.lib-section-title {
+  font-size: 0.75em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+}
+.lib-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 40px; }
+.book-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden; cursor: pointer; transition: all 0.2s;
+}
+.book-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+.book-cover {
+  height: 120px; display: flex; align-items: center; justify-content: center;
+  font-size: 48px; position: relative;
+}
+.book-cover-a1 { background: linear-gradient(135deg, #064e3b, #065f46); }
+.book-cover-a2 { background: linear-gradient(135deg, #1e3a5f, #1e40af); }
+.book-card-body { padding: 14px 16px; }
+.book-card-level { font-size: 0.68em; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
+.book-card-level.a1 { color: #4ade80; }
+.book-card-level.a2 { color: #60a5fa; }
+.book-card-title { font-size: 0.9em; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+.book-card-sub { font-size: 0.75em; color: var(--muted); }
+.book-card-words { font-size: 0.7em; color: rgba(255,255,255,0.2); margin-top: 8px; }
+
+/* Book reader view */
+.book-reader { display: none; }
+.book-reader.show { display: block; }
+.reader-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.reader-icon { font-size: 40px; width: 64px; height: 64px; background: var(--surface2); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reader-info { flex: 1; }
+.reader-level { font-size: 0.72em; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
+.reader-level.a1 { color: #4ade80; }
+.reader-level.a2 { color: #60a5fa; }
+.reader-title { font-size: 1.6em; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+.reader-subtitle { font-size: 0.88em; color: var(--muted); }
+.reader-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.btn-trans {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 8px; padding: 6px 14px; font-size: 0.8em; cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.btn-trans:hover, .btn-trans.active { border-color: #60a5fa; color: #60a5fa; background: rgba(96,165,250,0.1); }
+.btn-discuss {
+  background: rgba(0,146,70,0.15); border: 1px solid rgba(0,146,70,0.3); color: #4ade80;
+  border-radius: 8px; padding: 6px 14px; font-size: 0.8em; cursor: pointer; font-family: inherit; transition: all 0.15s; text-decoration: none;
+}
+.btn-discuss:hover { background: rgba(0,146,70,0.25); }
+
+/* Story content */
+.story-body { max-width: 680px; }
+.story-para {
+  font-family: 'Lora', Georgia, serif; font-size: 1.08em; line-height: 1.9;
+  color: rgba(255,255,255,0.88); margin-bottom: 20px;
+}
+.story-translation {
+  display: none; font-family: 'Inter', sans-serif; font-size: 0.82em;
+  color: var(--muted); border-left: 2px solid rgba(96,165,250,0.3);
+  padding: 8px 14px; margin: -12px 0 20px; border-radius: 0 8px 8px 0;
+  background: rgba(96,165,250,0.04); font-style: italic; line-height: 1.6;
+}
+.story-translation.show { display: block; }
+.vocab-word {
+  border-bottom: 1px dashed rgba(74,222,128,0.4); cursor: pointer; color: rgba(255,255,255,0.95);
+  transition: color 0.15s;
+}
+.vocab-word:hover { color: #4ade80; }
+
+/* Vocab panel */
+.vocab-section { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--border); }
+.vocab-title { font-size: 0.75em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.vocab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.vocab-card {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+}
+.vocab-italian { font-weight: 700; font-size: 0.9em; color: #4ade80; margin-bottom: 3px; }
+.vocab-english { font-size: 0.78em; color: var(--muted); }
+
+/* Questions */
+.questions-section { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--border); }
+.q-title { font-size: 0.75em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.question { margin-bottom: 16px; }
+.q-text { font-size: 0.9em; font-weight: 600; margin-bottom: 8px; color: rgba(255,255,255,0.85); }
+.q-options { display: flex; flex-direction: column; gap: 6px; }
+.q-option {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 14px; font-size: 0.83em; cursor: pointer; transition: all 0.15s; text-align: left; font-family: inherit; color: var(--text);
+}
+.q-option:hover { border-color: rgba(255,255,255,0.15); }
+.q-option.correct { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.3); color: #4ade80; }
+.q-option.wrong { background: rgba(206,43,55,0.1); border-color: rgba(206,43,55,0.3); color: #ff6b7a; }
+.q-feedback { font-size: 0.78em; margin-top: 6px; padding: 6px 10px; border-radius: 6px; display: none; }
+.q-feedback.show { display: block; }
+.q-feedback.good { background: rgba(74,222,128,0.1); color: #4ade80; }
+.q-feedback.bad { background: rgba(206,43,55,0.1); color: #ff6b7a; }
+
+/* Tooltip */
+.tooltip {
+  position: fixed; background: #2a2a2a; border: 1px solid rgba(74,222,128,0.3);
+  border-radius: 10px; padding: 10px 14px; font-size: 0.82em; pointer-events: none;
+  z-index: 999; max-width: 220px; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.tooltip.show { display: block; }
+.tooltip-word { font-weight: 700; color: #4ade80; margin-bottom: 3px; }
+.tooltip-def { color: var(--muted); line-height: 1.5; }
+
+@media (max-width: 768px) {
+  .page { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .reader { padding: 20px; }
+  .books-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-word" id="tt-word"></div>
+  <div class="tooltip-def" id="tt-def"></div>
+</div>
+
+<header>
+  <a href="/" class="h-logo"><span>🇮🇹</span><strong>Zu<em>zu</em></strong></a>
+  <nav>
+    <a href="/" class="nav-link">💬 Chat</a>
+    <a href="/books" class="nav-link active">📚 Books</a>
+  </nav>
+  <div class="h-right">
+    <div class="user-pill">
+      {% if user_picture %}<img src="{{ user_picture }}" referrerpolicy="no-referrer">{% endif %}
+      <span>{{ user_name.split()[0] }}</span>
+    </div>
+    <a href="/logout"><button class="btn-logout">Sign out</button></a>
+  </div>
+</header>
+
+<div class="page">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-title">A1 — Beginner</div>
+    {% for b in books if b.level == 'A1' %}
+    <div class="book-item lvl-a1" onclick="openBook('{{ b.id }}')">
+      <div class="book-num">{{ loop.index }}</div>
+      <div class="book-info">
+        <div class="book-title-sm">{{ b.title }}</div>
+        <div class="book-meta-sm">{{ b.words }} words</div>
+      </div>
+    </div>
+    {% endfor %}
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-title">A2 — Elementary</div>
+    {% for b in books if b.level == 'A2' %}
+    <div class="book-item lvl-a2" onclick="openBook('{{ b.id }}')">
+      <div class="book-num">{{ loop.index }}</div>
+      <div class="book-info">
+        <div class="book-title-sm">{{ b.title }}</div>
+        <div class="book-meta-sm">{{ b.words }} words</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Reader -->
+  <div class="reader">
+
+    <!-- Library -->
+    <div class="library show" id="library-view">
+      <div class="lib-hero">
+        <h1>📚 Libri Facili</h1>
+        <p>Simple Italian stories for beginners. Read, learn vocabulary, and test yourself.</p>
+      </div>
+
+      <div class="lib-section-title">A1 — Beginner</div>
+      <div class="books-grid">
+        {% for b in books if b.level == 'A1' %}
+        <div class="book-card" onclick="openBook('{{ b.id }}')">
+          <div class="book-cover book-cover-a1">{{ b.emoji }}</div>
+          <div class="book-card-body">
+            <div class="book-card-level a1">A1 · BEGINNER</div>
+            <div class="book-card-title">{{ b.title }}</div>
+            <div class="book-card-sub">{{ b.subtitle }}</div>
+            <div class="book-card-words">{{ b.words }} words</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="lib-section-title">A2 — Elementary</div>
+      <div class="books-grid">
+        {% for b in books if b.level == 'A2' %}
+        <div class="book-card" onclick="openBook('{{ b.id }}')">
+          <div class="book-cover book-cover-a2">{{ b.emoji }}</div>
+          <div class="book-card-body">
+            <div class="book-card-level a2">A2 · ELEMENTARY</div>
+            <div class="book-card-title">{{ b.title }}</div>
+            <div class="book-card-sub">{{ b.subtitle }}</div>
+            <div class="book-card-words">{{ b.words }} words</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Book reader -->
+    <div class="book-reader" id="book-reader">
+      <div class="reader-header">
+        <div class="reader-icon" id="r-emoji"></div>
+        <div class="reader-info">
+          <div class="reader-level" id="r-level"></div>
+          <div class="reader-title" id="r-title"></div>
+          <div class="reader-subtitle" id="r-subtitle"></div>
+          <div class="reader-actions">
+            <button class="btn-trans" id="trans-btn" onclick="toggleTranslation()">🌐 Show Translation</button>
+            <a class="btn-discuss" id="discuss-btn" href="/">💬 Discuss with Zuzu</a>
+            <button class="btn-trans" onclick="backToLibrary()">← Back to Library</button>
+          </div>
+        </div>
+      </div>
+      <div class="story-body" id="story-body"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const BOOKS = {{ books_json | safe }};
+let currentBook = null;
+let translationVisible = false;
+const tooltip = document.getElementById('tooltip');
+
+function openBook(id) {
+  currentBook = BOOKS.find(b => b.id === id);
+  if (!currentBook) return;
+
+  document.getElementById('library-view').classList.remove('show');
+  document.getElementById('book-reader').classList.add('show');
+
+  document.getElementById('r-emoji').textContent = currentBook.emoji;
+  const lvlEl = document.getElementById('r-level');
+  lvlEl.textContent = currentBook.level + ' · ' + (currentBook.level === 'A1' ? 'BEGINNER' : 'ELEMENTARY');
+  lvlEl.className = 'reader-level ' + currentBook.level.toLowerCase();
+  document.getElementById('r-title').textContent = currentBook.title;
+  document.getElementById('r-subtitle').textContent = currentBook.subtitle;
+  document.getElementById('discuss-btn').href = '/?topic=' + encodeURIComponent('Ho letto "' + currentBook.title + '". Parliamone!');
+
+  // Sidebar active state
+  document.querySelectorAll('.book-item').forEach(el => el.classList.remove('active'));
+
+  buildStory();
+  translationVisible = false;
+  document.getElementById('trans-btn').classList.remove('active');
+  document.getElementById('trans-btn').textContent = '🌐 Show Translation';
+
+  document.querySelector('.reader').scrollTop = 0;
+}
+
+function backToLibrary() {
+  document.getElementById('library-view').classList.add('show');
+  document.getElementById('book-reader').classList.remove('show');
+  currentBook = null;
+}
+
+function buildStory() {
+  const body = document.getElementById('story-body');
+  const vocab = currentBook.vocab;
+  let html = '';
+
+  currentBook.paragraphs.forEach(p => {
+    let text = p.italian;
+    // Highlight vocab words
+    Object.keys(vocab).forEach(word => {
+      const re = new RegExp('\\b(' + word + ')\\b', 'gi');
+      text = text.replace(re, `<span class="vocab-word" onmouseenter="showTip(event,'${word}','${vocab[word]}')" onmouseleave="hideTip()">$1</span>`);
+    });
+    html += `<p class="story-para">${text}</p>`;
+    html += `<div class="story-translation" data-trans="${escAttr(p.english)}">${p.english}</div>`;
+  });
+
+  // Vocabulary panel
+  html += `<div class="vocab-section"><div class="vocab-title">📖 Key Vocabulary</div><div class="vocab-grid">`;
+  Object.entries(vocab).forEach(([it, en]) => {
+    html += `<div class="vocab-card"><div class="vocab-italian">${it}</div><div class="vocab-english">${en}</div></div>`;
+  });
+  html += `</div></div>`;
+
+  // Questions
+  html += `<div class="questions-section"><div class="q-title">✏️ Comprehension Questions</div>`;
+  currentBook.questions.forEach((q, qi) => {
+    html += `<div class="question">
+      <div class="q-text">${qi+1}. ${q.q}</div>
+      <div class="q-options">`;
+    q.options.forEach((opt, oi) => {
+      html += `<button class="q-option" onclick="answer(this,${qi},${oi})">${opt}</button>`;
+    });
+    html += `</div><div class="q-feedback" id="qf-${qi}"></div></div>`;
+  });
+  html += `</div>`;
+
+  body.innerHTML = html;
+}
+
+function toggleTranslation() {
+  translationVisible = !translationVisible;
+  document.querySelectorAll('.story-translation').forEach(el => el.classList.toggle('show', translationVisible));
+  const btn = document.getElementById('trans-btn');
+  btn.classList.toggle('active', translationVisible);
+  btn.textContent = translationVisible ? '🌐 Hide Translation' : '🌐 Show Translation';
+}
+
+function answer(btn, qi, oi) {
+  const q = currentBook.questions[qi];
+  const opts = btn.parentElement.querySelectorAll('.q-option');
+  opts.forEach(o => o.disabled = true);
+  const fb = document.getElementById('qf-'+qi);
+  if (oi === q.correct) {
+    btn.classList.add('correct');
+    fb.textContent = '✓ Corretto! ' + q.explanation;
+    fb.className = 'q-feedback show good';
+  } else {
+    btn.classList.add('wrong');
+    opts[q.correct].classList.add('correct');
+    fb.textContent = '✗ La risposta corretta è: ' + q.options[q.correct] + '. ' + q.explanation;
+    fb.className = 'q-feedback show bad';
+  }
+}
+
+function showTip(e, word, def) {
+  document.getElementById('tt-word').textContent = word;
+  document.getElementById('tt-def').textContent = def;
+  tooltip.classList.add('show');
+  moveTip(e);
+}
+function moveTip(e) {
+  const t = tooltip;
+  let x = e.clientX + 14, y = e.clientY - 10;
+  if (x + 230 > window.innerWidth) x = e.clientX - 230;
+  if (y + 80 > window.innerHeight) y = e.clientY - 80;
+  t.style.left = x + 'px';
+  t.style.top = y + 'px';
+}
+function hideTip() { tooltip.classList.remove('show'); }
+document.addEventListener('mousemove', e => { if(tooltip.classList.contains('show')) moveTip(e); });
+
+function escAttr(s) { return s.replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
