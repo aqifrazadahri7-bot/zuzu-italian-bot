@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, render_template, session, redirect, u
 from werkzeug.middleware.proxy_fix import ProxyFix
 from authlib.integrations.flask_client import OAuth
 import google.generativeai as genai
-import os, json
+import os, json, hashlib
 from dotenv import load_dotenv
 from datetime import date, timedelta
 import uuid
@@ -158,6 +158,7 @@ ACHIEVEMENTS = [
   {"id":"bookworm","title":"Bookworm","desc":"Read 3 Italian stories","icon":"📚","xp":10},
   {"id":"week","title":"One Week","desc":"7-day streak","icon":"🗓️","xp":25},
   {"id":"xp500","title":"XP Champion","desc":"Earn 500 XP","icon":"⚡","xp":30},
+  {"id":"inviter","title":"Ambassador","desc":"Invite a friend to Zuzu","icon":"🤝","xp":75},
 ]
 
 DAILY_QUESTS = [
@@ -165,6 +166,14 @@ DAILY_QUESTS = [
   {"id":"earn_xp","title":"Earn 50 XP","icon":"⚡","target":50,"xp":20},
   {"id":"speak","title":"Use Zuzu Chat","icon":"🎤","target":1,"xp":25},
 ]
+
+
+def make_ref_code(user_id):
+    return hashlib.md5(user_id.encode()).hexdigest()[:7].upper()
+
+
+# referral_codes -> user_id lookup
+referral_map = {}   # ref_code -> user_id
 
 
 def default_progress():
@@ -179,6 +188,8 @@ def default_progress():
         'quests_done': [],
         'achievements': [],
         'streak_freezes': 1,
+        'referrals': 0,
+        'ref_code': None,
     }
 
 
@@ -243,6 +254,20 @@ def auth_callback():
     session['user_name'] = user_info.get('name', 'Learner')
     session['user_email'] = user_info.get('email', '')
     session['user_picture'] = user_info.get('picture', '')
+
+    # Handle referral reward
+    ref = session.pop('referred_by', None)
+    if ref and ref in referral_map:
+        referrer_id = referral_map[ref]
+        if referrer_id != user_info['sub']:
+            if referrer_id not in user_progress:
+                user_progress[referrer_id] = default_progress()
+            rp = user_progress[referrer_id]
+            rp['referrals'] = rp.get('referrals', 0) + 1
+            rp['xp'] = rp.get('xp', 0) + 75
+            if 'inviter' not in rp.get('achievements', []):
+                rp.setdefault('achievements', []).append('inviter')
+
     return redirect(url_for('index'))
 
 
@@ -388,6 +413,32 @@ def complete_lesson():
         'quests': prog['quests'], 'quests_done': prog['quests_done'],
         'achievements': prog['achievements'], 'new_achievements': new_ach,
         'accuracy': prog.get('accuracy', 100), 'bonus_xp': bonus_xp,
+    })
+
+
+@app.route('/join')
+def join_via_ref():
+    ref = request.args.get('ref', '').upper()
+    if ref:
+        session['referred_by'] = ref
+    return redirect(url_for('login'))
+
+
+@app.route('/api/invite', methods=['GET'])
+@login_required
+def get_invite():
+    uid = session.get('user_id', 'default')
+    if uid not in user_progress:
+        user_progress[uid] = default_progress()
+    prog = user_progress[uid]
+    if not prog.get('ref_code'):
+        prog['ref_code'] = make_ref_code(uid)
+        referral_map[prog['ref_code']] = uid
+    base = request.host_url.rstrip('/')
+    return jsonify({
+        'ref_code': prog['ref_code'],
+        'invite_url': f"{base}/join?ref={prog['ref_code']}",
+        'referrals': prog.get('referrals', 0),
     })
 
 

@@ -203,6 +203,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;f
   <div class="co-stats" id="co-stats"></div>
   <div class="co-xp" id="co-xp"></div>
   <button class="co-btn" onclick="window.location.href='/'">Back to dashboard →</button>
+  <button onclick="shareProgress()" style="background:none;border:1px solid var(--border2);border-radius:var(--r-lg);padding:10px;font-family:var(--font);font-size:.82em;font-weight:500;color:var(--t2);cursor:pointer;width:100%;max-width:360px;transition:all .12s;margin-top:-8px" onmouseover="this.style.borderColor='var(--border3)';this.style.color='var(--t1)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--t2)'">
+    ⤴ Share my progress
+  </button>
 
   <!-- Affiliate card — high intent moment after lesson -->
   <div id="co-affiliate" style="width:100%;max-width:360px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-xl);padding:16px 18px;text-align:left;margin-top:4px;display:none">
@@ -426,6 +429,11 @@ function complete(){
     }).catch(()=>{});
 }
 
+async function shareProgress() {
+  const msg = `I just completed the "${LESSON.title}" lesson on Zuzu 🇮🇹 Learning Italian with AI — free at zuzu-italian-bot.onrender.com`;
+  try { await navigator.share({ title: 'Zuzu Italian', text: msg, url: 'https://zuzu-italian-bot.onrender.com' }); }
+  catch(e) { navigator.clipboard?.writeText(msg + '\nhttps://zuzu-italian-bot.onrender.com'); }
+}
 function enterPractice(){S.practice=true;S.hearts=5;renderHearts();document.getElementById('noheart-sheet').classList.remove('show');}
 
 function resetFeedback(){

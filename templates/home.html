@@ -279,6 +279,40 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100
 .bn-icon{font-size:18px}
 .bn-label{font-size:.58em;font-weight:600}
 
+/* ── INVITE MODAL ── */
+.invite-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:400;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.invite-overlay.open{display:flex}
+.invite-modal{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r-xl);padding:28px;width:100%;max-width:440px;animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.im-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.im-title{font-size:1.1em;font-weight:700;letter-spacing:-.2px}
+.im-sub{font-size:.8em;color:var(--t2);margin-top:3px;line-height:1.5}
+.im-close{background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;padding:2px;line-height:1;transition:color .12s}
+.im-close:hover{color:var(--t1)}
+.im-reward{display:flex;align-items:center;gap:10px;background:var(--accent-dimx);border:1px solid rgba(94,106,210,.18);border-radius:var(--r-lg);padding:12px 14px;margin-bottom:20px}
+.im-reward-icon{font-size:22px}
+.im-reward-text{font-size:.82em;color:var(--t2);line-height:1.5}
+.im-reward-text strong{color:var(--t1);font-weight:600}
+.im-link-label{font-family:var(--mono);font-size:.68em;color:var(--t3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+.im-link-row{display:flex;gap:8px;margin-bottom:20px}
+.im-link-box{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;font-family:var(--mono);font-size:.78em;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.im-copy-btn{background:var(--accent);color:white;border:none;border-radius:var(--r);padding:9px 14px;font-family:var(--font);font-size:.82em;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .12s;flex-shrink:0}
+.im-copy-btn:hover{background:var(--accent-h)}
+.im-copy-btn.copied{background:var(--green)}
+.im-share-label{font-family:var(--mono);font-size:.68em;color:var(--t3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
+.im-share-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.share-btn{display:flex;flex-direction:column;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 8px;cursor:pointer;text-decoration:none;transition:all .12s;border:none}
+.share-btn:hover{background:var(--s3);border-color:var(--border2)}
+.share-btn .sb-icon{font-size:20px}
+.share-btn .sb-label{font-size:.65em;font-weight:600;color:var(--t3)}
+.im-stats{display:flex;gap:10px}
+.im-stat{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;text-align:center}
+.im-stat-val{font-family:var(--mono);font-size:1.3em;font-weight:600;display:block;color:var(--t1)}
+.im-stat-lbl{font-size:.68em;color:var(--t3);font-weight:500}
+.im-qr{text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.im-qr-label{font-family:var(--mono);font-size:.65em;color:var(--t3);margin-bottom:8px}
+.im-qr img{border-radius:var(--r);border:1px solid var(--border)}
+
 /* ── XP TOAST ── */
 .xp-toast{position:fixed;bottom:80px;right:20px;z-index:300;background:var(--amber);color:#1a1000;border-radius:8px;padding:7px 14px;font-family:var(--mono);font-size:.82em;font-weight:600;pointer-events:none;animation:toastFloat 1.8s ease forwards;display:none}
 @keyframes toastFloat{0%{opacity:0;transform:translateY(12px)}15%{opacity:1;transform:translateY(0)}75%{opacity:1;transform:translateY(-6px)}100%{opacity:0;transform:translateY(-18px)}}
@@ -335,6 +369,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100
       Vocabulary
     </a>
     <div class="nav-sep"></div>
+    <button class="nav-item" onclick="openInvite()" style="color:var(--accent);background:var(--accent-dimx);border:1px solid rgba(94,106,210,.15)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:1"><path d="M11 7a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2 14c0-3 2-5 5-5M12 10l2 2-2 2M14 12h-4" stroke-linecap="round"/></svg>
+      Invite Friends
+      <span class="nav-badge" id="ref-count" style="display:none;background:var(--accent-dim);color:var(--accent);border-color:rgba(94,106,210,.25)">0</span>
+    </button>
     <a href="/download" class="nav-item">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M5 7l3 3 3-3" stroke-linecap="round"/><path d="M2 13h12" stroke-linecap="round"/></svg>
       Download App
@@ -484,6 +523,69 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100
   <a href="/download" class="bn-item"><span class="bn-icon">↓</span><span class="bn-label">App</span></a>
   <a href="/logout" class="bn-item"><span class="bn-icon">⇥</span><span class="bn-label">Sign out</span></a>
 </nav>
+
+<!-- INVITE MODAL -->
+<div class="invite-overlay" id="invite-overlay" onclick="if(event.target===this)closeInvite()">
+  <div class="invite-modal">
+    <div class="im-header">
+      <div>
+        <div class="im-title">Invite Friends 🤝</div>
+        <div class="im-sub">Share Zuzu with friends learning Italian</div>
+      </div>
+      <button class="im-close" onclick="closeInvite()">✕</button>
+    </div>
+
+    <div class="im-reward">
+      <span class="im-reward-icon">⚡</span>
+      <div class="im-reward-text">
+        You earn <strong>+75 XP</strong> for every friend who joins via your link.
+        They start with a <strong>bonus 50 XP</strong> head start.
+      </div>
+    </div>
+
+    <div class="im-link-label">Your invite link</div>
+    <div class="im-link-row">
+      <div class="im-link-box" id="invite-link-box">Loading…</div>
+      <button class="im-copy-btn" id="copy-btn" onclick="copyLink()">Copy</button>
+    </div>
+
+    <div class="im-share-label">Share via</div>
+    <div class="im-share-grid">
+      <a class="share-btn" id="share-whatsapp" href="#" target="_blank" rel="noopener">
+        <span class="sb-icon">💬</span><span class="sb-label">WhatsApp</span>
+      </a>
+      <a class="share-btn" id="share-twitter" href="#" target="_blank" rel="noopener">
+        <span class="sb-icon">𝕏</span><span class="sb-label">Twitter/X</span>
+      </a>
+      <a class="share-btn" id="share-email" href="#">
+        <span class="sb-icon">✉️</span><span class="sb-label">Email</span>
+      </a>
+      <button class="share-btn" onclick="nativeShare()">
+        <span class="sb-icon">⤴</span><span class="sb-label">More</span>
+      </button>
+    </div>
+
+    <div class="im-stats">
+      <div class="im-stat">
+        <span class="im-stat-val" id="ref-total">0</span>
+        <span class="im-stat-lbl">Friends joined</span>
+      </div>
+      <div class="im-stat">
+        <span class="im-stat-val" id="ref-xp-earned">0</span>
+        <span class="im-stat-lbl">XP earned</span>
+      </div>
+      <div class="im-stat">
+        <span class="im-stat-val" id="ref-code-display">—</span>
+        <span class="im-stat-lbl">Your code</span>
+      </div>
+    </div>
+
+    <div class="im-qr">
+      <div class="im-qr-label">Or scan to share</div>
+      <img id="invite-qr" src="" width="100" height="100" alt="QR Code">
+    </div>
+  </div>
+</div>
 
 <div class="xp-toast" id="xp-toast"></div>
 
@@ -731,6 +833,66 @@ document.getElementById('vocab-nav-link').addEventListener('click', e => {
   e.preventDefault();
   document.getElementById('vocabulary').scrollIntoView({behavior:'smooth'});
 });
+
+// ── INVITE ──
+let inviteData = null;
+
+async function openInvite() {
+  document.getElementById('invite-overlay').classList.add('open');
+  if (inviteData) return;
+  try {
+    const res = await fetch('/api/invite');
+    inviteData = await res.json();
+    const url = inviteData.invite_url;
+    const code = inviteData.ref_code;
+    const refs = inviteData.referrals || 0;
+
+    document.getElementById('invite-link-box').textContent = url;
+    document.getElementById('ref-total').textContent = refs;
+    document.getElementById('ref-xp-earned').textContent = refs * 75;
+    document.getElementById('ref-code-display').textContent = code;
+
+    // Show badge in sidebar
+    const badge = document.getElementById('ref-count');
+    if (refs > 0 && badge) { badge.textContent = refs; badge.style.display = ''; }
+
+    const msg = encodeURIComponent(`I'm learning Italian with Zuzu AI 🇮🇹 — free lessons, gamified streaks, and an AI tutor. Join me here: ${url}`);
+    const twitterMsg = encodeURIComponent(`I've been using Zuzu to learn Italian 🇮🇹 Free AI tutor, structured lessons, daily streaks. Try it: ${url} #LearnItalian`);
+    const emailSubj = encodeURIComponent('You should try Zuzu for Italian');
+    const emailBody = encodeURIComponent(`Hey!\n\nI've been learning Italian with Zuzu — it's free, gamified, and has an AI tutor that corrects your grammar. Check it out:\n\n${url}\n\nYou get a bonus 50 XP when you join through my link!`);
+
+    document.getElementById('share-whatsapp').href = `https://wa.me/?text=${msg}`;
+    document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${twitterMsg}`;
+    document.getElementById('share-email').href = `mailto:?subject=${emailSubj}&body=${emailBody}`;
+
+    // QR code
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(url)}&bgcolor=1a1a1a&color=ebebeb&margin=2`;
+    document.getElementById('invite-qr').src = qrUrl;
+  } catch(e) { console.error(e); }
+}
+
+function closeInvite() {
+  document.getElementById('invite-overlay').classList.remove('open');
+}
+
+function copyLink() {
+  const url = inviteData?.invite_url;
+  if (!url) return;
+  navigator.clipboard?.writeText(url).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+async function nativeShare() {
+  const url = inviteData?.invite_url;
+  if (!url) return;
+  try {
+    await navigator.share({ title: 'Learn Italian with Zuzu', text: 'Free AI Italian tutor — join me!', url });
+  } catch(e) { copyLink(); }
+}
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/static/sw.js');
 boot();
