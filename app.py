@@ -334,6 +334,24 @@ def send_notification():
         return jsonify({'error': str(e)}), 500
 
 
+current_apk_url = 'https://expo.dev/artifacts/eas/9V5EKYJ9uGyPALVkEbBkri.apk'
+
+@app.route('/api/update-apk', methods=['POST'])
+def update_apk():
+    global current_apk_url
+    if request.headers.get('X-Admin-Key') != 'zuzu-admin-notify-2024':
+        return jsonify({'error': 'Unauthorized'}), 401
+    url = request.get_json().get('apk_url', '')
+    if url:
+        current_apk_url = url
+    return jsonify({'apk_url': current_apk_url})
+
+
+@app.route('/api/apk-url')
+def get_apk_url():
+    return jsonify({'apk_url': current_apk_url})
+
+
 @app.route('/robots.txt')
 def robots():
     return app.send_static_file('robots.txt')
