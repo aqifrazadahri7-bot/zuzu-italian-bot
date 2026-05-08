@@ -258,6 +258,7 @@ def login_required(f):
 # ── Auth routes ──
 
 MOBILE_KEY = 'zuzu-mobile-key-2024'
+push_tokens = set()   # stores all registered device tokens
 
 @app.route('/api/mobile/chat', methods=['POST'])
 def mobile_chat():
@@ -294,6 +295,43 @@ def mobile_chat():
     else:
         italian_part = reply
     return jsonify({'italian': italian_part, 'correction': correction_part})
+
+
+@app.route('/api/push-token', methods=['POST'])
+def save_push_token():
+    if request.headers.get('X-API-Key') != MOBILE_KEY:
+        return jsonify({'error': 'Unauthorized'}), 401
+    token = request.get_json().get('token', '')
+    if token:
+        push_tokens.add(token)
+    return jsonify({'status': 'saved', 'total': len(push_tokens)})
+
+
+@app.route('/api/notify', methods=['POST'])
+def send_notification():
+    """Send push notification to all users. Protected by admin key."""
+    if request.headers.get('X-Admin-Key') != 'zuzu-admin-notify-2024':
+        return jsonify({'error': 'Unauthorized'}), 401
+    data = request.get_json()
+    title = data.get('title', 'Zuzu Update')
+    body = data.get('body', 'Something new in Zuzu!')
+    if not push_tokens:
+        return jsonify({'sent': 0, 'message': 'No registered devices'})
+    import urllib.request
+    messages = [{'to': t, 'title': title, 'body': body, 'sound': 'default'} for t in push_tokens]
+    payload = json.dumps(messages).encode()
+    req = urllib.request.Request(
+        'https://exp.host/--/api/v2/push/send',
+        data=payload,
+        headers={'Content-Type': 'application/json', 'Accept': 'application/json'},
+        method='POST'
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            result = json.loads(r.read())
+        return jsonify({'sent': len(push_tokens), 'result': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/robots.txt')
