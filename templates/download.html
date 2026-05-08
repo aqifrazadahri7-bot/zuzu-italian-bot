@@ -170,8 +170,8 @@ nav {
         <span class="badge">~25 MB</span>
         <span class="badge">Free</span>
       </div>
-      <a href="https://expo.dev/artifacts/eas/rUR4tNTaiRXVHM7Aw1rkbJ.apk" class="dl-btn" id="apk-btn" target="_blank">
-        ⬇ Download APK for Android
+      <a href="https://expo.dev/artifacts/eas/rUR4tNTaiRXVHM7Aw1rkbJ.apk" class="dl-btn" id="apk-btn" download="ZuzuItalian.apk">
+        ⬇ Download ZuzuItalian.apk (~25 MB)
       </a>
     </div>
 
@@ -320,39 +320,7 @@ function generateQR() {
 }
 generateQR();
 
-function downloadAPK(e) {
-  e.preventDefault();
-  const btn = document.getElementById('apk-btn');
-  const apkUrl = btn.dataset.apkUrl;
-  if (apkUrl && apkUrl !== '#apk-download') {
-    window.open(apkUrl, '_blank');
-  } else {
-    // Show instructions modal
-    const msg = document.createElement('div');
-    msg.style.cssText = `
-      position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;
-      display:flex;align-items:center;justify-content:center;padding:20px;
-    `;
-    msg.innerHTML = `
-      <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:32px;max-width:420px;text-align:center;">
-        <div style="font-size:40px;margin-bottom:12px;">🚧</div>
-        <h3 style="font-size:1.2em;font-weight:800;color:#f0f0f0;margin-bottom:8px;">APK Build Coming Soon</h3>
-        <p style="color:rgba(255,255,255,0.5);font-size:0.88em;line-height:1.6;margin-bottom:20px;">
-          The Android APK is being built. In the meantime, you can use Zuzu as a web app by scanning the QR code or opening the link in Chrome on your Android phone and tapping <strong>"Add to Home Screen"</strong>.
-        </p>
-        <a href="https://zuzu-italian-bot.onrender.com" target="_blank"
-           style="display:block;background:#009246;color:white;border-radius:12px;padding:12px;font-weight:700;text-decoration:none;margin-bottom:10px;">
-          Open Web App Instead →
-        </a>
-        <button onclick="this.closest('div[style]').remove()"
-                style="background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);border-radius:10px;padding:10px 20px;cursor:pointer;font-family:inherit;width:100%;">
-          Close
-        </button>
-      </div>`;
-    document.body.appendChild(msg);
-    msg.onclick = (e) => { if(e.target === msg) msg.remove(); };
-  }
-}
+// APK is live — direct download link active
 </script>
 </body>
 </html>
