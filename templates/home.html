@@ -1189,7 +1189,7 @@ async function openInvite() {
     const emailSubj = encodeURIComponent('You should try Zuzu for Italian');
     const emailBody = encodeURIComponent(`Hey!\n\nI've been learning Italian with Zuzu — it's free, gamified, and has an AI tutor that corrects your grammar. Check it out:\n\n${url}\n\nYou get a bonus 50 XP when you join through my link!`);
 
-    const APK_URL = 'https://expo.dev/artifacts/eas/rUR4tNTaiRXVHM7Aw1rkbJ.apk';
+    const APK_URL = 'https://expo.dev/artifacts/eas/9V5EKYJ9uGyPALVkEbBkri.apk';
     const apkMsg = encodeURIComponent(`Download Zuzu Italian app 🇮🇹 — free AI Italian tutor on Android!\n\n📲 Download APK: ${APK_URL}\n\n🌐 Or use web app: ${url}`);
     document.getElementById('apk-whatsapp').href = `https://wa.me/?text=${apkMsg}`;
     document.getElementById('apk-sms').href = `sms:?body=${apkMsg}`;
@@ -1220,7 +1220,7 @@ function copyLink() {
 }
 
 function copyAPK() {
-  const url = 'https://expo.dev/artifacts/eas/rUR4tNTaiRXVHM7Aw1rkbJ.apk';
+  const url = 'https://expo.dev/artifacts/eas/9V5EKYJ9uGyPALVkEbBkri.apk';
   navigator.clipboard?.writeText(url).then(() => {
     const btn = document.getElementById('copy-apk-btn');
     btn.textContent = 'Copied!';
