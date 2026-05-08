@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zuzu — Dashboard</title>
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#009246">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zuzu">
+<meta name="mobile-web-app-capable" content="yes">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #009246; --green2: #4ade80; --red: #ce2b37; --blue: #60a5fa; --yellow: #fbbf24; --purple: #a78bfa;
+  --bg: #0a0a0a; --s1: #141414; --s2: #1c1c1c; --s3: #242424;
+  --border: rgba(255,255,255,0.07); --text: #f0f0f0; --muted: rgba(255,255,255,0.4);
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── NAV ── */
+nav {
+  height: 58px; background: rgba(10,10,10,0.95); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 28px; gap: 6px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px);
+}
+.nav-logo { display: flex; align-items: center; gap: 8px; margin-right: 20px; text-decoration: none; }
+.nav-logo .flag { font-size: 22px; }
+.nav-logo strong { font-size: 1.1em; font-weight: 800; color: var(--text); }
+.nav-logo strong em { color: var(--green); font-style: normal; }
+.nav-link {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 14px; border-radius: 9px; font-size: 0.84em; font-weight: 500;
+  text-decoration: none; color: var(--muted); transition: all 0.15s;
+}
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.nav-link.active { color: var(--text); background: rgba(255,255,255,0.08); }
+.nav-link .icon { font-size: 15px; }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.user-pill { display: flex; align-items: center; gap: 8px; background: var(--s2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px 4px 4px; }
+.user-pill img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
+.user-pill .name { font-size: 0.82em; font-weight: 500; }
+.btn-logout { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 5px 10px; font-size: 0.78em; cursor: pointer; font-family: inherit; transition: all 0.15s; text-decoration: none; display: flex; align-items: center; }
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* ── LAYOUT ── */
+.page { max-width: 1200px; margin: 0 auto; padding: 32px 24px 60px; display: flex; flex-direction: column; gap: 28px; }
+
+/* ── WELCOME ── */
+.welcome-bar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  background: linear-gradient(135deg, rgba(0,146,70,0.12), rgba(0,146,70,0.04));
+  border: 1px solid rgba(0,146,70,0.2); border-radius: 18px; padding: 24px 28px;
+}
+.welcome-left h1 { font-size: 1.5em; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+.welcome-left p { color: var(--muted); font-size: 0.88em; }
+.welcome-left p span { color: var(--green2); font-weight: 600; }
+.start-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--green); color: white; border: none; border-radius: 12px;
+  padding: 12px 22px; font-size: 0.9em; font-weight: 700; cursor: pointer; font-family: inherit;
+  text-decoration: none; transition: all 0.2s; white-space: nowrap;
+}
+.start-btn:hover { background: #007a3a; transform: translateY(-1px); }
+
+/* ── STATS ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.stat-card {
+  background: var(--s1); border: 1px solid var(--border); border-radius: 16px;
+  padding: 20px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden;
+}
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.stat-card.green::before { background: linear-gradient(90deg, var(--green), var(--green2)); }
+.stat-card.blue::before { background: linear-gradient(90deg, #3b82f6, var(--blue)); }
+.stat-card.yellow::before { background: linear-gradient(90deg, #f59e0b, var(--yellow)); }
+.stat-card.purple::before { background: linear-gradient(90deg, #7c3aed, var(--purple)); }
+.stat-icon { font-size: 22px; }
+.stat-val { font-size: 2em; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+.stat-label { font-size: 0.78em; color: var(--muted); font-weight: 500; }
+.stat-sub { font-size: 0.72em; color: var(--muted); opacity: 0.6; }
+
+/* ── GRID ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+
+/* ── SECTION HEADER ── */
+.section-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-title { font-size: 0.88em; font-weight: 700; letter-spacing: 0.3px; }
+.section-link { font-size: 0.78em; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+.section-link:hover { color: var(--text); }
+
+/* ── TODAY'S LESSON ── */
+.today-card {
+  background: var(--s1); border: 1px solid var(--border); border-radius: 18px; padding: 24px;
+}
+.today-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.2); color: var(--yellow); padding: 4px 12px; border-radius: 8px; font-size: 0.72em; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 14px; }
+.today-day { font-size: 1.25em; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px; }
+.today-theme { font-size: 0.82em; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+.today-skills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.skill-chip { background: var(--s3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 0.72em; font-weight: 600; color: var(--muted); }
+.skill-chip.r { border-color: rgba(96,165,250,0.3); color: var(--blue); background: rgba(96,165,250,0.08); }
+.skill-chip.w { border-color: rgba(167,139,250,0.3); color: var(--purple); background: rgba(167,139,250,0.08); }
+.skill-chip.l { border-color: rgba(251,191,36,0.3); color: var(--yellow); background: rgba(251,191,36,0.08); }
+.skill-chip.s { border-color: rgba(74,222,128,0.3); color: var(--green2); background: rgba(74,222,128,0.08); }
+.today-grammar { background: var(--s2); border-radius: 10px; padding: 12px 14px; font-size: 0.82em; margin-bottom: 16px; }
+.today-grammar .label { font-size: 0.7em; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+.today-grammar .val { color: var(--text); font-weight: 500; }
+.btn-start-lesson {
+  width: 100%; background: var(--yellow); color: #1a1000; border: none; border-radius: 10px;
+  padding: 11px; font-size: 0.88em; font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: all 0.15s; text-decoration: none; display: block; text-align: center;
+}
+.btn-start-lesson:hover { background: #f59e0b; }
+.complete-day-btn {
+  width: 100%; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); color: var(--green2);
+  border-radius: 10px; padding: 11px; font-size: 0.88em; font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: all 0.15s; margin-top: 8px;
+}
+.complete-day-btn:hover { background: rgba(74,222,128,0.2); }
+
+/* ── 30-DAY PROGRESS ── */
+.progress-card {
+  background: var(--s1); border: 1px solid var(--border); border-radius: 18px; padding: 24px;
+}
+.days-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
+.day-cell {
+  aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 0.7em; font-weight: 700; cursor: pointer; transition: all 0.15s; position: relative;
+  border: 1px solid var(--border);
+}
+.day-cell.done { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.3); color: var(--green2); }
+.day-cell.today { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.4); color: var(--yellow); box-shadow: 0 0 0 2px rgba(251,191,36,0.2); }
+.day-cell.locked { background: var(--s2); color: rgba(255,255,255,0.15); cursor: default; }
+.day-cell:not(.locked):hover { transform: scale(1.1); z-index: 2; }
+.week-labels { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-bottom: 8px; }
+.week-lbl { font-size: 0.65em; color: var(--muted); text-align: center; font-weight: 600; }
+
+/* ── BOOKS ── */
+.books-scroll { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.mini-book {
+  background: var(--s2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  cursor: pointer; transition: all 0.18s; text-decoration: none; display: block;
+}
+.mini-book:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.12); }
+.mini-cover {
+  height: 72px; display: flex; align-items: center; justify-content: center; font-size: 32px;
+}
+.mini-cover.a1 { background: linear-gradient(135deg, #064e3b, #065f46); }
+.mini-cover.a2 { background: linear-gradient(135deg, #1e3a5f, #1e40af); }
+.mini-body { padding: 10px 12px; }
+.mini-level { font-size: 0.65em; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px; }
+.mini-level.a1 { color: var(--green2); }
+.mini-level.a2 { color: var(--blue); }
+.mini-title { font-size: 0.8em; font-weight: 700; line-height: 1.3; margin-bottom: 2px; }
+.mini-sub { font-size: 0.68em; color: var(--muted); }
+
+/* ── VOCABULARY ── */
+.vocab-card {
+  background: var(--s1); border: 1px solid var(--border); border-radius: 18px; padding: 24px;
+}
+.vocab-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--s2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 14px; margin-bottom: 16px;
+}
+.vocab-search input {
+  background: none; border: none; outline: none; color: var(--text); font-size: 0.85em;
+  font-family: inherit; flex: 1;
+}
+.vocab-search input::placeholder { color: var(--muted); }
+.vocab-tabs { display: flex; gap: 4px; margin-bottom: 14px; }
+.vtab {
+  padding: 5px 14px; border-radius: 8px; font-size: 0.78em; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border); background: none; color: var(--muted);
+  font-family: inherit; transition: all 0.15s;
+}
+.vtab.active { background: var(--s3); color: var(--text); border-color: rgba(255,255,255,0.12); }
+.vocab-list { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+.vocab-list::-webkit-scrollbar { width: 3px; }
+.vocab-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.vocab-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--s2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px;
+  transition: border-color 0.15s;
+}
+.vocab-item:hover { border-color: rgba(255,255,255,0.12); }
+.vi-left { display: flex; flex-direction: column; gap: 2px; }
+.vi-italian { font-size: 0.88em; font-weight: 700; color: var(--green2); }
+.vi-english { font-size: 0.75em; color: var(--muted); }
+.vi-right { display: flex; align-items: center; gap: 8px; }
+.vi-level { font-size: 0.65em; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+.vi-level.a1 { background: rgba(74,222,128,0.1); color: var(--green2); }
+.vi-level.a2 { background: rgba(96,165,250,0.1); color: var(--blue); }
+.vi-speak { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.4; transition: opacity 0.15s; padding: 2px; }
+.vi-speak:hover { opacity: 1; }
+
+/* ── QUICK ACTIONS ── */
+.actions-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.action-card {
+  background: var(--s1); border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+  text-decoration: none; transition: all 0.18s; display: flex; flex-direction: column; gap: 10px; cursor: pointer;
+}
+.action-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.12); background: var(--s2); }
+.ac-icon { font-size: 26px; }
+.ac-title { font-size: 0.88em; font-weight: 700; color: var(--text); }
+.ac-sub { font-size: 0.75em; color: var(--muted); line-height: 1.4; }
+
+/* ── PROGRESS BAR ── */
+.prog-bar-wrap { background: var(--s3); border-radius: 4px; height: 6px; margin-top: 8px; overflow: hidden; }
+.prog-bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--green), var(--green2)); transition: width 0.5s ease; }
+
+@media (max-width: 900px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+  .three-col { grid-template-columns: repeat(2, 1fr); }
+  .actions-row { grid-template-columns: repeat(2, 1fr); }
+  .books-scroll { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .three-col { grid-template-columns: 1fr 1fr; }
+  .days-grid { grid-template-columns: repeat(6, 1fr); }
+  nav { padding: 0 14px; gap: 2px; }
+  .nav-link span { display: none; }
+  .page { padding: 16px 12px 40px; gap: 18px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><span class="flag">🇮🇹</span><strong>Zu<em>zu</em></strong></a>
+  <a href="/" class="nav-link active"><span class="icon">🏠</span><span>Dashboard</span></a>
+  <a href="/chat" class="nav-link"><span class="icon">💬</span><span>Chat</span></a>
+  <a href="/books" class="nav-link"><span class="icon">📚</span><span>Books</span></a>
+  <a href="#vocabulary" class="nav-link" onclick="document.getElementById('vocabulary').scrollIntoView({behavior:'smooth'});return false;"><span class="icon">📖</span><span>Vocabulary</span></a>
+  <div class="nav-right">
+    <div class="user-pill">
+      {% if user_picture %}<img src="{{ user_picture }}" referrerpolicy="no-referrer">{% endif %}
+      <span class="name">{{ user_name.split()[0] }}</span>
+    </div>
+    <a href="/logout" class="btn-logout">Sign out</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Welcome -->
+  <div class="welcome-bar">
+    <div class="welcome-left">
+      <h1>Benvenuto, {{ user_name.split()[0] }}! 👋</h1>
+      <p>You're on <span id="welcome-day">Day 1</span> of your 30-day Italian journey. <span id="welcome-streak"></span></p>
+    </div>
+    <a href="/chat" class="start-btn">🎤 Start Speaking Practice →</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card green">
+      <div class="stat-icon">📅</div>
+      <div class="stat-val" id="stat-day">1</div>
+      <div class="stat-label">Current Day</div>
+      <div class="stat-sub">of 30-day program</div>
+      <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar" style="width:3%"></div></div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-val" id="stat-streak">0</div>
+      <div class="stat-label">Day Streak</div>
+      <div class="stat-sub">days completed</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">📚</div>
+      <div class="stat-val">6</div>
+      <div class="stat-label">Stories Available</div>
+      <div class="stat-sub">A1 &amp; A2 level</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon">📖</div>
+      <div class="stat-val" id="stat-vocab">72</div>
+      <div class="stat-label">Vocabulary Words</div>
+      <div class="stat-sub">from all stories</div>
+    </div>
+  </div>
+
+  <!-- Today + Progress -->
+  <div class="two-col">
+
+    <!-- Today's Lesson -->
+    <div class="today-card">
+      <div class="today-tag">📅 TODAY'S LESSON</div>
+      <div class="today-day" id="today-title">Day 1 — Introductions & Essere</div>
+      <div class="today-theme" id="today-theme">Grammar: Essere · Subject Pronouns<br>Vocabulary: Greetings · Nationalities · Numbers 1–20</div>
+      <div class="today-skills" id="today-skills">
+        <span class="skill-chip s">Speaking</span>
+        <span class="skill-chip l">Listening</span>
+      </div>
+      <div class="today-grammar">
+        <div class="label">Today's Target Sentence</div>
+        <div class="val" id="today-target">"Mi chiamo [name]. Sono italiano/a. Ho [age] anni."</div>
+      </div>
+      <a href="/chat" class="btn-start-lesson">▶ Start Today's Lesson with Zuzu</a>
+      <button class="complete-day-btn" onclick="completeDay()">✓ Mark Day as Complete</button>
+    </div>
+
+    <!-- 30-Day Grid -->
+    <div class="progress-card">
+      <div class="section-hdr">
+        <div class="section-title">📊 30-Day Progress</div>
+        <span id="progress-pct" style="font-size:0.78em;color:var(--muted);">0 / 30 days</span>
+      </div>
+      <div class="week-labels" id="week-labels"></div>
+      <div class="days-grid" id="days-grid"></div>
+      <div style="display:flex;gap:16px;margin-top:14px;font-size:0.72em;color:var(--muted);">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:3px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);display:inline-block;"></span>Completed</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:3px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);display:inline-block;"></span>Today</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--s2);border:1px solid var(--border);display:inline-block;"></span>Upcoming</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick Actions -->
+  <div>
+    <div class="section-hdr"><div class="section-title">⚡ Quick Actions</div></div>
+    <div class="actions-row">
+      <a href="/chat" class="action-card">
+        <div class="ac-icon">🎤</div>
+        <div class="ac-title">Speak with Zuzu</div>
+        <div class="ac-sub">Start a voice conversation in Italian</div>
+      </a>
+      <a href="/books" class="action-card">
+        <div class="ac-icon">📖</div>
+        <div class="ac-title">Read a Story</div>
+        <div class="ac-sub">A1 &amp; A2 Italian stories with vocabulary</div>
+      </a>
+      <a href="#vocabulary" onclick="document.getElementById('vocabulary').scrollIntoView({behavior:'smooth'});return false;" class="action-card">
+        <div class="ac-icon">🃏</div>
+        <div class="ac-title">Vocabulary</div>
+        <div class="ac-sub">Browse all words from your stories</div>
+      </a>
+      <a href="/chat?topic=Fammi+un+quiz+di+grammatica+italiana" class="action-card">
+        <div class="ac-icon">✏️</div>
+        <div class="ac-title">Grammar Quiz</div>
+        <div class="ac-sub">Ask Zuzu to test your grammar</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Books -->
+  <div>
+    <div class="section-hdr">
+      <div class="section-title">📚 Libri Facili</div>
+      <a href="/books" class="section-link">View all →</a>
+    </div>
+    <div class="books-scroll">
+      <a href="/books#a1-famiglia" class="mini-book">
+        <div class="mini-cover a1">👨‍👩‍👧</div>
+        <div class="mini-body"><div class="mini-level a1">A1 · BEGINNER</div><div class="mini-title">La Mia Famiglia</div><div class="mini-sub">Meet Marco and his family</div></div>
+      </a>
+      <a href="/books#a1-bar" class="mini-book">
+        <div class="mini-cover a1">☕</div>
+        <div class="mini-body"><div class="mini-level a1">A1 · BEGINNER</div><div class="mini-title">Al Bar</div><div class="mini-sub">A morning at the Italian café</div></div>
+      </a>
+      <a href="/books#a1-mercato" class="mini-book">
+        <div class="mini-cover a1">🥦</div>
+        <div class="mini-body"><div class="mini-level a1">A1 · BEGINNER</div><div class="mini-title">Al Mercato</div><div class="mini-sub">Shopping at the Italian market</div></div>
+      </a>
+      <a href="/books#a2-vacanze" class="mini-book">
+        <div class="mini-cover a2">🏖️</div>
+        <div class="mini-body"><div class="mini-level a2">A2 · ELEMENTARY</div><div class="mini-title">Le Vacanze di Giulia</div><div class="mini-sub">A summer holiday in Sicily</div></div>
+      </a>
+      <a href="/books#a2-ristorante" class="mini-book">
+        <div class="mini-cover a2">🍝</div>
+        <div class="mini-body"><div class="mini-level a2">A2 · ELEMENTARY</div><div class="mini-title">Una Cena Speciale</div><div class="mini-sub">A birthday dinner</div></div>
+      </a>
+      <a href="/books#a2-roma" class="mini-book">
+        <div class="mini-cover a2">🏛️</div>
+        <div class="mini-body"><div class="mini-level a2">A2 · ELEMENTARY</div><div class="mini-title">Un Giorno a Roma</div><div class="mini-sub">Exploring the Eternal City</div></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Vocabulary -->
+  <div id="vocabulary">
+    <div class="section-hdr"><div class="section-title">📖 Vocabulary Bank</div></div>
+    <div class="vocab-card">
+      <div class="vocab-search">
+        <span>🔍</span>
+        <input type="text" id="vocab-search-input" placeholder="Search words..." oninput="filterVocab()">
+      </div>
+      <div class="vocab-tabs">
+        <button class="vtab active" onclick="filterTab('all',this)">All (72)</button>
+        <button class="vtab" onclick="filterTab('A1',this)">A1 (36)</button>
+        <button class="vtab" onclick="filterTab('A2',this)">A2 (36)</button>
+      </div>
+      <div class="vocab-list" id="vocab-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Curriculum data ──
+const CURRICULUM = [
+  {d:1,title:"Introductions & Essere",theme:"Grammar: Essere · Subject Pronouns",skills:["S","L"],target:'"Mi chiamo [name]. Sono italiano/a."',week:"Week 1"},
+  {d:2,title:"Articles & Noun Gender",theme:"Grammar: Definite/Indefinite articles · Gender rules",skills:["R","W"],target:'"Il gatto / La casa / Un ragazzo / Una ragazza"',week:"Week 1"},
+  {d:3,title:"Avere & Questions",theme:"Grammar: Avere · Chi, cosa, dove, quando",skills:["S","L"],target:'"Hai un fratello? Dove abiti?"',week:"Week 1"},
+  {d:4,title:"Regular -ARE Verbs",theme:"Grammar: Present tense -ARE (parlare, lavorare)",skills:["W","R"],target:'"Io parlo italiano. Tu lavori molto."',week:"Week 1"},
+  {d:5,title:"Regular -ERE & -IRE Verbs",theme:"Grammar: Scrivere, leggere, dormire, capire",skills:["S","L"],target:'"Leggo un libro. Dormo bene."',week:"Week 1"},
+  {d:6,title:"Adjectives & Agreement",theme:"Grammar: Adjective-noun agreement · Buono, bello",skills:["R","W"],target:'"Una bella casa. Un ragazzo simpatico."',week:"Week 1"},
+  {d:7,title:"Week 1 Review",theme:"Full Week 1 review + speaking sprint",skills:["R","W","L","S"],target:'"Mi chiamo... Ho... Abito a... Mi piace..."',week:"Week 1"},
+  {d:8,title:"Prepositions & Locations",theme:"Grammar: a, di, in, con, su · Articulated prepositions",skills:["L","S"],target:'"Vado al bar. Sono in casa."',week:"Week 2"},
+  {d:9,title:"Giving Directions",theme:"Grammar: Informal imperative · Andare/Venire",skills:["S","L"],target:'"Vai dritto, poi gira a destra."',week:"Week 2"},
+  {d:10,title:"Transport & Modals",theme:"Grammar: Potere, Dovere, Volere",skills:["R","W"],target:'"Posso prendere il treno? Devo comprare il biglietto."',week:"Week 2"},
+  {d:11,title:"At the Hotel",theme:"Grammar: C\'è / Ci sono · Vorrei",skills:["S","L"],target:'"Vorrei una camera doppia. C\'è il wifi?"',week:"Week 2"},
+  {d:12,title:"Shopping & Numbers",theme:"Grammar: Numbers 1–1000 · Quanto costa?",skills:["W","R"],target:'"Quanto costa questa camicia? Costa trenta euro."',week:"Week 2"},
+  {d:13,title:"Ordering at a Restaurant",theme:"Grammar: Mi piace/piacciono · Ordering phrases",skills:["S","L"],target:'"Vorrei la pasta. Mi piace il vino rosso."',week:"Week 2"},
+  {d:14,title:"Week 2 Review",theme:"Travel vocabulary consolidation + roleplay",skills:["R","W","L","S"],target:'"Dov\'è la stazione? Come arrivo all\'albergo?"',week:"Week 2"},
+  {d:15,title:"Expressing Opinions",theme:"Grammar: Penso che, Secondo me, Mi sembra",skills:["S","W"],target:'"Secondo me, l\'italiano è bellissimo."',week:"Week 3"},
+  {d:16,title:"Passato Prossimo (Avere)",theme:"Grammar: Passato prossimo with avere (regular)",skills:["W","L"],target:'"Ho mangiato la pizza. Ho studiato molto."',week:"Week 3"},
+  {d:17,title:"Passato Prossimo (Essere)",theme:"Grammar: Essere verbs + participle agreement",skills:["R","W"],target:'"Sono andato a Roma. È partita ieri."',week:"Week 3"},
+  {d:18,title:"Irregular Past Participles",theme:"Grammar: fatto, detto, scritto, letto, visto",skills:["L","S"],target:'"Ho fatto colazione. Ho letto un libro."',week:"Week 3"},
+  {d:19,title:"Imperfetto Introduction",theme:"Grammar: Imperfetto vs Passato prossimo",skills:["W","R"],target:'"Quando ero piccolo, giocavo molto."',week:"Week 3"},
+  {d:20,title:"Reflexive Verbs & Health",theme:"Grammar: Alzarsi, vestirsi, sentirsi",skills:["S","L"],target:'"Mi sono alzato tardi. Mi sento bene."',week:"Week 3"},
+  {d:21,title:"Week 3 Review",theme:"Past tenses + opinion expressions",skills:["R","W","L","S"],target:'"Ieri sono andato... Penso che sia stato..."',week:"Week 3"},
+  {d:22,title:"Culture & Continuous",theme:"Grammar: Stare + gerundio (sto facendo)",skills:["R","L"],target:'"Sto studiando italiano. Cosa stai facendo?"',week:"Week 4"},
+  {d:23,title:"Future Tense",theme:"Grammar: Futuro semplice regular + irregular",skills:["W","S"],target:'"Domani andrò a Milano. Parlerò italiano."',week:"Week 4"},
+  {d:24,title:"Comparatives",theme:"Grammar: più/meno di · il/la più · migliore",skills:["R","W"],target:'"Roma è più grande di Firenze."',week:"Week 4"},
+  {d:25,title:"Conditional",theme:"Grammar: Vorrei, potrei, dovrei, sarei",skills:["S","L"],target:'"Vorrei visitare Venezia. Potrei parlare italiano."',week:"Week 4"},
+  {d:26,title:"Media & Relative Pronouns",theme:"Grammar: Che, cui · Italian media vocabulary",skills:["R","L"],target:'"Il libro che ho letto è bellissimo."',week:"Week 4"},
+  {d:27,title:"Subjunctive Awareness",theme:"Grammar: Congiuntivo recognition only",skills:["R","W"],target:'"Spero che tu stia bene."',week:"Week 4"},
+  {d:28,title:"Extended Conversation",theme:"Mixed grammar + discourse connectors",skills:["S","L"],target:'"Però, invece, quindi, comunque, anzi..."',week:"Week 4"},
+  {d:29,title:"Writing Workshop",theme:"Formal register · Linking devices",skills:["W","R"],target:'"Tuttavia, d\'altra parte, in conclusione..."',week:"Week 4"},
+  {d:30,title:"Final Review & Mock B1",theme:"Full review of all 30 days",skills:["R","W","L","S"],target:'"Sono pronto per il B1!"',week:"Week 4"}
+];
+
+const SKILL_LABELS = {R:"Reading",W:"Writing",L:"Listening",S:"Speaking"};
+const SKILL_CLASS = {R:"r",W:"w",L:"l",S:"s"};
+
+// ── Vocabulary ──
+const ALL_VOCAB = [
+  {it:"famiglia",en:"family",lv:"A1"},{it:"padre",en:"father",lv:"A1"},{it:"madre",en:"mother",lv:"A1"},
+  {it:"sorella",en:"sister",lv:"A1"},{it:"fratello",en:"brother",lv:"A1"},{it:"medico",en:"doctor",lv:"A1"},
+  {it:"insegnante",en:"teacher",lv:"A1"},{it:"insieme",en:"together",lv:"A1"},{it:"felice",en:"happy",lv:"A1"},
+  {it:"tradizione",en:"tradition",lv:"A1"},{it:"bar",en:"café/bar",lv:"A1"},{it:"cappuccino",en:"cappuccino",lv:"A1"},
+  {it:"cornetto",en:"croissant",lv:"A1"},{it:"caldo",en:"hot",lv:"A1"},{it:"fresco",en:"fresh",lv:"A1"},
+  {it:"simpatico",en:"friendly/nice",lv:"A1"},{it:"giornale",en:"newspaper",lv:"A1"},{it:"mattina",en:"morning",lv:"A1"},
+  {it:"allegro",en:"cheerful",lv:"A1"},{it:"mercato",en:"market",lv:"A1"},{it:"frutta",en:"fruit",lv:"A1"},
+  {it:"verdura",en:"vegetables",lv:"A1"},{it:"pane",en:"bread",lv:"A1"},{it:"mele",en:"apples",lv:"A1"},
+  {it:"pomodori",en:"tomatoes",lv:"A1"},{it:"quanto costa",en:"how much?",lv:"A1"},{it:"chilo",en:"kilogram",lv:"A1"},
+  {it:"piazza",en:"square/piazza",lv:"A1"},{it:"compra",en:"buys",lv:"A1"},{it:"paga",en:"pays",lv:"A1"},
+  {it:"barista",en:"barman/barista",lv:"A1"},{it:"clienti",en:"customers",lv:"A1"},{it:"solito",en:"usual",lv:"A1"},
+  {it:"abito",en:"I live",lv:"A1"},{it:"studentessa",en:"female student",lv:"A1"},{it:"venditori",en:"sellers",lv:"A1"},
+  {it:"vacanze",en:"holidays",lv:"A2"},{it:"viaggio",en:"journey/trip",lv:"A2"},{it:"spiaggia",en:"beach",lv:"A2"},
+  {it:"meravigliosa",en:"wonderful",lv:"A2"},{it:"regali",en:"gifts",lv:"A2"},{it:"ricordi",en:"memories",lv:"A2"},
+  {it:"triste",en:"sad",lv:"A2"},{it:"ceramiche",en:"ceramics",lv:"A2"},{it:"mercati",en:"markets",lv:"A2"},
+  {it:"chiese",en:"churches",lv:"A2"},{it:"cibo",en:"food",lv:"A2"},{it:"cristallina",en:"crystal clear",lv:"A2"},
+  {it:"compleanno",en:"birthday",lv:"A2"},{it:"cameriere",en:"waiter",lv:"A2"},{it:"bistecca",en:"steak",lv:"A2"},
+  {it:"vino rosso",en:"red wine",lv:"A2"},{it:"torta",en:"cake",lv:"A2"},{it:"candela",en:"candle",lv:"A2"},
+  {it:"tanti auguri",en:"happy birthday",lv:"A2"},{it:"indimenticabile",en:"unforgettable",lv:"A2"},
+  {it:"commossa",en:"moved/touched",lv:"A2"},{it:"condiviso",en:"shared",lv:"A2"},{it:"Colosseo",en:"Colosseum",lv:"A2"},
+  {it:"fontana",en:"fountain",lv:"A2"},{it:"moneta",en:"coin",lv:"A2"},{it:"trattoria",en:"traditional restaurant",lv:"A2"},
+  {it:"cuore",en:"heart",lv:"A2"},{it:"estate scorsa",en:"last summer",lv:"A2"},{it:"per la prima volta",en:"for the first time",lv:"A2"},
+  {it:"guida turistica",en:"tour guide",lv:"A2"},{it:"patate al forno",en:"roast potatoes",lv:"A2"},
+  {it:"ha scelto",en:"chose",lv:"A2"},{it:"ha ordinato",en:"ordered",lv:"A2"},{it:"menu",en:"menu",lv:"A2"},
+  {it:"ha visitato",en:"visited",lv:"A2"},{it:"le è piaciuta",en:"she liked it",lv:"A2"},{it:"è tornata",en:"she returned",lv:"A2"},
+  {it:"quando era piccola",en:"when she was young",lv:"A2"}
+];
+
+let currentTab = 'all';
+let currentDay = 1;
+let completedDays = [];
+
+// ── Load progress ──
+async function loadProgress() {
+  try {
+    const res = await fetch('/progress');
+    const d = await res.json();
+    currentDay = d.day || 1;
+    completedDays = d.completed_days || [];
+    renderProgress();
+  } catch(e) { renderProgress(); }
+}
+
+function renderProgress() {
+  const lesson = CURRICULUM[currentDay - 1] || CURRICULUM[0];
+
+  document.getElementById('stat-day').textContent = currentDay;
+  document.getElementById('stat-streak').textContent = completedDays.length;
+  document.getElementById('prog-bar').style.width = Math.min((completedDays.length / 30) * 100, 100) + '%';
+  document.getElementById('welcome-day').textContent = 'Day ' + currentDay;
+  document.getElementById('progress-pct').textContent = completedDays.length + ' / 30 days';
+
+  if(completedDays.length > 0) {
+    document.getElementById('welcome-streak').innerHTML = '🔥 <span style="color:var(--yellow);font-weight:600;">' + completedDays.length + ' day' + (completedDays.length>1?'s':'') + ' completed!</span>';
+  }
+
+  document.getElementById('today-title').textContent = 'Day ' + currentDay + ' — ' + lesson.title;
+  document.getElementById('today-theme').innerHTML = lesson.theme.replace(' · ','<br>');
+  document.getElementById('today-target').textContent = lesson.target;
+
+  const skillsEl = document.getElementById('today-skills');
+  skillsEl.innerHTML = lesson.skills.map(s => `<span class="skill-chip ${SKILL_CLASS[s]}">${SKILL_LABELS[s]}</span>`).join('');
+
+  renderGrid();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('days-grid');
+  const labels = document.getElementById('week-labels');
+  const weeks = ['W1','W1','W1','W1','W1','W1','W1','W2','W2','W2'];
+  labels.innerHTML = weeks.map(w=>`<div class="week-lbl">${w}</div>`).join('');
+
+  grid.innerHTML = '';
+  for(let i = 1; i <= 30; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'day-cell';
+    cell.textContent = i;
+    if(completedDays.includes(i)) cell.classList.add('done');
+    else if(i === currentDay) cell.classList.add('today');
+    else if(i > currentDay) cell.classList.add('locked');
+    cell.title = 'Day ' + i + ': ' + (CURRICULUM[i-1]?.title || '');
+    if(i <= currentDay) cell.onclick = () => jumpToDay(i);
+    grid.appendChild(cell);
+  }
+
+  // Fix week labels (rows of 10)
+  const weekNames = ['Week 1','','','','','','','Week 2','',''];
+  labels.innerHTML = weekNames.map(w=>`<div class="week-lbl">${w}</div>`).join('');
+}
+
+function jumpToDay(day) {
+  currentDay = day;
+  const lesson = CURRICULUM[day-1];
+  document.getElementById('today-title').textContent = 'Day ' + day + ' — ' + lesson.title;
+  document.getElementById('today-theme').innerHTML = lesson.theme.replace(' · ','<br>');
+  document.getElementById('today-target').textContent = lesson.target;
+  const skillsEl = document.getElementById('today-skills');
+  skillsEl.innerHTML = lesson.skills.map(s=>`<span class="skill-chip ${SKILL_CLASS[s]}">${SKILL_LABELS[s]}</span>`).join('');
+  renderGrid();
+  document.querySelector('.today-card').scrollIntoView({behavior:'smooth'});
+}
+
+async function completeDay() {
+  try {
+    const res = await fetch('/progress',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({complete_day:currentDay})});
+    const d = await res.json();
+    currentDay = d.day;
+    completedDays = d.completed_days;
+    renderProgress();
+    const btn = document.querySelector('.complete-day-btn');
+    btn.textContent = '🎉 Day ' + (currentDay-1) + ' Complete! Now on Day ' + currentDay;
+    btn.style.background = 'rgba(74,222,128,0.2)';
+    setTimeout(()=>{btn.textContent='✓ Mark Day as Complete';btn.style.background='';},3000);
+  } catch(e){}
+}
+
+// ── Vocabulary ──
+function renderVocab(list) {
+  const el = document.getElementById('vocab-list');
+  if(!list.length){el.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px;font-size:0.85em;">No words found</div>';return;}
+  el.innerHTML = list.map(v=>`
+    <div class="vocab-item">
+      <div class="vi-left">
+        <div class="vi-italian">${v.it}</div>
+        <div class="vi-english">${v.en}</div>
+      </div>
+      <div class="vi-right">
+        <span class="vi-level ${v.lv.toLowerCase()}">${v.lv}</span>
+        <button class="vi-speak" onclick="speakIt('${v.it}')" title="Listen">🔊</button>
+      </div>
+    </div>`).join('');
+}
+
+function filterTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.vtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterVocab();
+}
+
+function filterVocab() {
+  const q = document.getElementById('vocab-search-input').value.toLowerCase();
+  let list = ALL_VOCAB;
+  if(currentTab !== 'all') list = list.filter(v=>v.lv===currentTab);
+  if(q) list = list.filter(v=>v.it.toLowerCase().includes(q)||v.en.toLowerCase().includes(q));
+  renderVocab(list);
+}
+
+function speakIt(word) {
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = 'it-IT'; u.rate = 0.85;
+  const v = speechSynthesis.getVoices().find(v=>v.lang.startsWith('it'));
+  if(v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+
+speechSynthesis.onvoiceschanged = ()=>speechSynthesis.getVoices();
+
+// ── PWA ──
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/static/sw.js');
+
+// ── Init ──
+loadProgress();
+renderVocab(ALL_VOCAB);
+</script>
+</body>
+</html>

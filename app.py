@@ -139,10 +139,21 @@ def logout():
 @app.route('/')
 @login_required
 def index():
+    return render_template('dashboard.html',
+        user_name=session.get('user_name', 'Learner'),
+        user_picture=session.get('user_picture', '')
+    )
+
+
+@app.route('/chat')
+@login_required
+def chat_page():
+    topic = request.args.get('topic', '')
     return render_template('index.html',
         user_name=session.get('user_name', 'Learner'),
         user_picture=session.get('user_picture', ''),
-        user_email=session.get('user_email', '')
+        user_email=session.get('user_email', ''),
+        initial_topic=topic
     )
 
 
