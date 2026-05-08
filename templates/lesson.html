@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Italian Lesson — Zuzu</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g: #58CC02; --g-dk: #46A302; --g-bg: rgba(88,204,2,.12); --g-border: rgba(88,204,2,.4);
+  --r: #FF4B4B; --r-bg: rgba(255,75,75,.12); --r-border: rgba(255,75,75,.4);
+  --gold: #FFC800; --gold-bg: rgba(255,200,0,.12);
+  --b: #1CB0F6; --b-bg: rgba(28,176,246,.12);
+  --bg: #131313; --c1: #1c1c1c; --c2: #252525; --c3: #2e2e2e;
+  --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.14);
+  --t1: #fff; --t2: rgba(255,255,255,.7); --t3: rgba(255,255,255,.4);
+  --font: 'Nunito', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--t1); min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── HEADER ── */
+.lesson-header {
+  display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px;
+  flex-shrink: 0;
+}
+.close-btn {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--c1); border: 1.5px solid var(--border2);
+  color: var(--t2); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .15s; flex-shrink: 0; text-decoration: none;
+}
+.close-btn:hover { background: var(--c2); color: var(--t1); }
+.progress-track { flex: 1; height: 10px; background: var(--c2); border-radius: 5px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--g); border-radius: 5px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+.hearts-row { display: flex; gap: 2px; }
+.heart { font-size: 18px; transition: all .3s; }
+.heart.lost { opacity: .2; filter: grayscale(1); transform: scale(.8); }
+.xp-chip {
+  background: var(--gold-bg); border: 1px solid rgba(255,200,0,.25);
+  border-radius: 14px; padding: 4px 10px; font-weight: 800; font-size: 0.82em;
+  color: var(--gold); white-space: nowrap;
+}
+
+/* ── COMBO BADGE ── */
+.combo-badge {
+  position: fixed; top: 70px; right: 16px; z-index: 100;
+  background: var(--gold); color: #1a1000; border-radius: 20px;
+  padding: 6px 14px; font-weight: 900; font-size: 0.88em;
+  pointer-events: none; display: none;
+  animation: comboPop .3s cubic-bezier(.17,.67,.3,1.5);
+}
+@keyframes comboPop { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+/* ── EXERCISE AREA ── */
+.exercise-area {
+  flex: 1; overflow-y: auto; padding: 10px 18px 16px; display: flex; flex-direction: column;
+}
+.ex-prompt-label { font-size: 0.78em; font-weight: 700; color: var(--t3); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 12px; }
+.ex-question {
+  font-size: 1.15em; font-weight: 800; color: var(--t1); line-height: 1.5;
+  margin-bottom: 18px; min-height: 56px;
+}
+.audio-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--b-bg); border: 1.5px solid rgba(28,176,246,.35);
+  color: var(--b); border-radius: 14px; padding: 12px 20px;
+  font-family: var(--font); font-weight: 800; font-size: 1em;
+  cursor: pointer; margin-bottom: 20px; transition: all .15s;
+}
+.audio-btn:hover { background: rgba(28,176,246,.2); }
+.audio-btn .speaker { font-size: 22px; }
+
+/* ── MULTIPLE CHOICE ── */
+.mc-options { display: flex; flex-direction: column; gap: 10px; }
+.mc-btn {
+  width: 100%; background: var(--c1); border: 2px solid var(--border2);
+  border-radius: 14px; padding: 16px 20px; text-align: left;
+  font-family: var(--font); font-weight: 700; font-size: 1em; color: var(--t1);
+  cursor: pointer; transition: all .12s; display: flex; align-items: center; gap: 12px;
+  min-height: 58px;
+}
+.mc-btn:hover:not(:disabled) { background: var(--c2); border-color: var(--border2); transform: translateY(-1px); }
+.mc-btn:active:not(:disabled) { transform: translateY(0); }
+.mc-btn.selected { border-color: var(--b); background: var(--b-bg); }
+.mc-btn.correct { border-color: var(--g); background: var(--g-bg); color: #9ff574; }
+.mc-btn.wrong { border-color: var(--r); background: var(--r-bg); color: #ff9090; animation: shake .4s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+.mc-letter { width: 32px; height: 32px; border-radius: 8px; background: var(--c2); border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.82em; font-weight: 900; flex-shrink: 0; }
+.mc-btn.selected .mc-letter { background: var(--b-bg); border-color: var(--b); color: var(--b); }
+.mc-btn.correct .mc-letter { background: var(--g-bg); border-color: var(--g); color: var(--g); }
+.mc-btn.wrong .mc-letter { background: var(--r-bg); border-color: var(--r); color: var(--r); }
+
+/* ── TAP WORD ── */
+.answer-area {
+  min-height: 56px; background: var(--c2); border-bottom: 2px solid var(--border2);
+  border-radius: 10px 10px 0 0; padding: 10px 12px; margin-bottom: 20px;
+  display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start;
+}
+.answer-area.has-words { border-color: var(--b); }
+.word-bank { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 4px; }
+.word-tile {
+  background: var(--c1); border: 2px solid var(--border2);
+  border-radius: 10px; padding: 10px 16px;
+  font-family: var(--font); font-weight: 700; font-size: 0.95em; color: var(--t1);
+  cursor: pointer; transition: all .12s; user-select: none;
+  box-shadow: 0 3px 0 rgba(0,0,0,.3);
+}
+.word-tile:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0,0,0,.3); }
+.word-tile:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.word-tile.in-answer { background: var(--b-bg); border-color: var(--b); }
+.word-tile.disabled { opacity: .3; cursor: not-allowed; }
+.word-tile.correct-tile { background: var(--g-bg); border-color: var(--g); color: #9ff574; }
+.word-tile.wrong-tile { background: var(--r-bg); border-color: var(--r); color: #ff9090; animation: shake .4s ease; }
+
+/* ── TRANSLATION ── */
+.translation-input {
+  width: 100%; background: var(--c1); border: 2px solid var(--border2);
+  border-radius: 14px; padding: 16px 18px;
+  font-family: var(--font); font-size: 1.05em; font-weight: 600; color: var(--t1);
+  outline: none; transition: border-color .2s; resize: none; min-height: 80px;
+}
+.translation-input:focus { border-color: var(--b); }
+.translation-input.correct { border-color: var(--g); background: var(--g-bg); }
+.translation-input.wrong { border-color: var(--r); background: var(--r-bg); animation: shake .4s ease; }
+.correct-answer-hint { font-size: 0.82em; color: var(--g); margin-top: 8px; font-weight: 700; display: none; }
+.correct-answer-hint.show { display: block; }
+
+/* ── FILL BLANK ── */
+.fill-sentence { font-size: 1.2em; font-weight: 800; color: var(--t1); margin-bottom: 20px; line-height: 1.6; }
+.fill-blank { display: inline-block; min-width: 80px; border-bottom: 3px solid var(--b); padding: 0 4px 2px; color: var(--b); font-style: italic; }
+.fill-options { display: flex; flex-direction: column; gap: 8px; }
+
+/* ── MATCHING ── */
+.matching-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.match-btn {
+  background: var(--c1); border: 2px solid var(--border2); border-radius: 12px;
+  padding: 14px 12px; text-align: center;
+  font-family: var(--font); font-weight: 700; font-size: 0.92em; color: var(--t1);
+  cursor: pointer; transition: all .12s; min-height: 52px;
+  display: flex; align-items: center; justify-content: center;
+}
+.match-btn:hover:not(:disabled) { background: var(--c2); }
+.match-btn.selected { border-color: var(--b); background: var(--b-bg); color: var(--b); }
+.match-btn.matched { border-color: var(--g); background: var(--g-bg); color: #9ff574; pointer-events: none; }
+.match-btn.wrong-match { border-color: var(--r); background: var(--r-bg); color: #ff9090; animation: shake .4s ease; }
+
+/* ── FEEDBACK BAR ── */
+.feedback-bar {
+  position: sticky; bottom: 0; left: 0; right: 0;
+  padding: 14px 18px 18px; padding-bottom: max(18px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border); background: var(--bg);
+  display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+  transform: translateY(0); transition: background .2s, border-color .2s;
+}
+.feedback-bar.correct-bar { background: var(--g-bg); border-color: var(--g-border); }
+.feedback-bar.wrong-bar { background: var(--r-bg); border-color: var(--r-border); }
+.feedback-msg { font-weight: 800; font-size: 1em; display: none; }
+.feedback-msg.show { display: block; }
+.feedback-msg.correct { color: #58CC02; }
+.feedback-msg.wrong { color: var(--r); }
+.feedback-explanation { font-size: 0.82em; color: var(--t2); display: none; line-height: 1.5; }
+.feedback-explanation.show { display: block; }
+.check-btn {
+  width: 100%; border-radius: 14px; padding: 16px; border: none; cursor: pointer;
+  font-family: var(--font); font-weight: 900; font-size: 1.05em;
+  transition: all .12s; letter-spacing: .3px;
+  box-shadow: 0 4px 0 rgba(0,0,0,.3);
+}
+.check-btn.inactive { background: var(--c2); color: var(--t3); cursor: not-allowed; box-shadow: none; }
+.check-btn.active { background: var(--g); color: white; box-shadow: 0 4px 0 var(--g-dk); }
+.check-btn.active:hover { background: #63dc05; transform: translateY(-1px); box-shadow: 0 5px 0 var(--g-dk); }
+.check-btn.active:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--g-dk); }
+.check-btn.continue { background: var(--g); color: white; }
+.check-btn.continue-wrong { background: var(--r); color: white; box-shadow: 0 4px 0 rgba(180,0,0,.5); }
+
+/* ── COMPLETE SCREEN ── */
+.complete-screen {
+  position: fixed; inset: 0; background: var(--bg); z-index: 999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px 24px; text-align: center; gap: 16px;
+  display: none;
+}
+.complete-screen.show { display: flex; animation: scaleIn .4s cubic-bezier(.17,.67,.3,1.3); }
+@keyframes scaleIn { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
+.complete-trophy { font-size: 72px; filter: drop-shadow(0 4px 20px rgba(255,200,0,.5)); animation: trophyBounce .6s cubic-bezier(.17,.67,.3,1.5) .2s both; }
+@keyframes trophyBounce { from{transform:scale(0) rotate(-10deg)} to{transform:scale(1) rotate(0)} }
+.complete-title { font-size: 2em; font-weight: 900; letter-spacing: -1px; }
+.complete-subtitle { font-size: 1em; color: var(--t2); }
+.complete-stats { display: flex; gap: 12px; margin: 8px 0; }
+.cstat { flex: 1; background: var(--c1); border: 1px solid var(--border); border-radius: 14px; padding: 16px 12px; }
+.cstat-val { font-size: 1.6em; font-weight: 900; display: block; margin-bottom: 4px; }
+.cstat-lbl { font-size: 0.72em; color: var(--t3); font-weight: 700; }
+.complete-xp-anim {
+  font-size: 1.8em; font-weight: 900; color: var(--gold);
+  animation: xpPop .5s cubic-bezier(.17,.67,.3,1.5) .4s both;
+}
+@keyframes xpPop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.complete-btn { width: 100%; max-width: 360px; border-radius: 16px; padding: 18px; border: none; cursor: pointer; font-family: var(--font); font-weight: 900; font-size: 1.1em; background: var(--g); color: white; box-shadow: 0 5px 0 var(--g-dk); transition: all .12s; }
+.complete-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--g-dk); }
+.complete-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--g-dk); }
+
+/* ── NO HEARTS OVERLAY ── */
+.noheart-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 998;
+  display: flex; align-items: flex-end; justify-content: center; display: none;
+}
+.noheart-overlay.show { display: flex; }
+.noheart-sheet {
+  background: var(--c1); border-radius: 24px 24px 0 0; padding: 28px 24px 32px;
+  width: 100%; max-width: 520px; text-align: center;
+  animation: slideUp .3s ease;
+  border: 1px solid var(--border); border-bottom: none;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.noheart-icon { font-size: 52px; margin-bottom: 12px; }
+.noheart-title { font-size: 1.4em; font-weight: 900; margin-bottom: 8px; }
+.noheart-sub { color: var(--t2); font-size: .9em; line-height: 1.5; margin-bottom: 20px; }
+.noheart-btn { width: 100%; border-radius: 14px; padding: 16px; font-family: var(--font); font-weight: 800; font-size: 1em; border: none; cursor: pointer; margin-bottom: 8px; }
+.noheart-btn.primary { background: var(--g); color: white; box-shadow: 0 4px 0 var(--g-dk); }
+.noheart-btn.secondary { background: var(--c2); color: var(--t2); }
+
+/* ── CONFETTI ── */
+@keyframes confettiFall { 0%{opacity:1;transform:translateY(0) rotate(0deg)} 100%{opacity:0;transform:translateY(100vh) rotate(720deg)} }
+</style>
+</head>
+<body>
+
+<!-- COMBO BADGE -->
+<div class="combo-badge" id="combo-badge">🔥 COMBO ×<span id="combo-num">2</span></div>
+
+<!-- HEADER -->
+<div class="lesson-header">
+  <a href="/" class="close-btn">✕</a>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="hearts-row" id="hearts-row"></div>
+  <div class="xp-chip" id="xp-chip">+0 XP</div>
+</div>
+
+<!-- EXERCISE AREA (dynamically rendered) -->
+<div class="exercise-area" id="exercise-area"></div>
+
+<!-- FEEDBACK BAR -->
+<div class="feedback-bar" id="feedback-bar">
+  <div id="feedback-msg" class="feedback-msg"></div>
+  <div id="feedback-exp" class="feedback-explanation"></div>
+  <button class="check-btn inactive" id="check-btn" onclick="handleCheck()">CHECK</button>
+</div>
+
+<!-- COMPLETE SCREEN -->
+<div class="complete-screen" id="complete-screen">
+  <div class="complete-trophy">🏆</div>
+  <div class="complete-title">Lesson Complete!</div>
+  <div class="complete-subtitle" id="complete-sub">Ottimo lavoro!</div>
+  <div class="complete-stats" id="complete-stats"></div>
+  <div class="complete-xp-anim" id="complete-xp"></div>
+  <button class="complete-btn" onclick="finishLesson()">Continue →</button>
+</div>
+
+<!-- NO HEARTS OVERLAY -->
+<div class="noheart-overlay" id="noheart-overlay">
+  <div class="noheart-sheet">
+    <div class="noheart-icon">💔</div>
+    <div class="noheart-title">Out of Hearts!</div>
+    <div class="noheart-sub">You've used all your hearts. Practice mode lets you continue without losing hearts — or go home and try again later.</div>
+    <button class="noheart-btn primary" onclick="practiceMode()">Practice Mode (No Hearts)</button>
+    <a href="/"><button class="noheart-btn secondary">← Go Home</button></a>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const LESSON = JSON.parse('{{ lesson_json | safe }}');
+const EXERCISES = LESSON.exercises;
+
+// ── STATE ──
+const STATE = {
+  idx: 0,
+  hearts: {{ hearts }},
+  maxHearts: 5,
+  xp: 0,
+  combo: 0,
+  correct: 0,
+  mistakes: 0,
+  phase: 'answering',   // 'answering' | 'feedback' | 'complete'
+  selected: null,       // current answer
+  practiceMode: false,
+  tapAnswer: [],        // for tap_word
+  matchState: { leftSel: null, matched: [] },  // for matching
+};
+
+const ENCOURAGEMENTS_CORRECT = ["Ottimo! 🎉","Perfetto! ⭐","Bravo/a! 🔥","Esatto! ✨","Fantastico! 🎊","Corretto! 💪"];
+const ENCOURAGEMENTS_WRONG = ["Non mollare! 💪","Ci riprovi!","Quasi giusto!","Continua così!","Errare è umano! 🤗"];
+
+// ── AUDIO ──
+let audioCtx;
+function getCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+
+function playTone(freq, type, dur, delay=0) {
+  try {
+    const ctx = getCtx();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.25, ctx.currentTime + delay);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+    o.start(ctx.currentTime + delay); o.stop(ctx.currentTime + delay + dur + 0.01);
+  } catch(e) {}
+}
+
+function playCorrect() {
+  playTone(523, 'sine', 0.1, 0);
+  playTone(659, 'sine', 0.1, 0.1);
+  playTone(784, 'sine', 0.2, 0.2);
+}
+
+function playWrong() {
+  playTone(200, 'sawtooth', 0.15, 0);
+  playTone(140, 'sawtooth', 0.2, 0.15);
+}
+
+function playTick() {
+  playTone(880, 'sine', 0.05, 0);
+}
+
+function speakItalian(text) {
+  if (!text) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'it-IT'; u.rate = 0.82; u.pitch = 1;
+    const v = speechSynthesis.getVoices().find(v => v.lang?.startsWith('it'));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch(e) {}
+}
+
+speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+
+// ── INIT ──
+function boot() {
+  renderHearts();
+  loadExercise();
+}
+
+// ── HEARTS ──
+function renderHearts() {
+  const row = document.getElementById('hearts-row');
+  row.innerHTML = '';
+  for (let i = 0; i < STATE.maxHearts; i++) {
+    const h = document.createElement('span');
+    h.className = 'heart' + (i >= STATE.hearts ? ' lost' : '');
+    h.textContent = '❤️';
+    row.appendChild(h);
+  }
+}
+
+function loseHeart() {
+  if (STATE.practiceMode) return;
+  STATE.hearts = Math.max(0, STATE.hearts - 1);
+  renderHearts();
+  if (STATE.hearts === 0) {
+    setTimeout(() => document.getElementById('noheart-overlay').classList.add('show'), 600);
+  }
+}
+
+// ── PROGRESS ──
+function updateProgress() {
+  const pct = (STATE.idx / EXERCISES.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('xp-chip').textContent = '+' + STATE.xp + ' XP';
+}
+
+// ── COMBO ──
+function showCombo() {
+  if (STATE.combo < 2) return;
+  const el = document.getElementById('combo-badge');
+  document.getElementById('combo-num').textContent = STATE.combo;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 1800);
+}
+
+// ── EXERCISE LOADER ──
+function loadExercise() {
+  STATE.phase = 'answering';
+  STATE.selected = null;
+  STATE.tapAnswer = [];
+  STATE.matchState = { leftSel: null, matched: [] };
+
+  const ex = EXERCISES[STATE.idx];
+  const area = document.getElementById('exercise-area');
+  area.innerHTML = '';
+
+  const fb = document.getElementById('feedback-bar');
+  fb.className = 'feedback-bar';
+  document.getElementById('feedback-msg').className = 'feedback-msg';
+  document.getElementById('feedback-exp').className = 'feedback-explanation';
+  const btn = document.getElementById('check-btn');
+  btn.className = 'check-btn inactive';
+  btn.textContent = 'CHECK';
+  btn.onclick = handleCheck;
+
+  const renderers = {
+    multiple_choice: renderMC,
+    tap_word: renderTapWord,
+    translation: renderTranslation,
+    fill_blank: renderFillBlank,
+    matching: renderMatching,
+    listening: renderListening,
+  };
+  (renderers[ex.type] || renderMC)(ex, area);
+  updateProgress();
+
+  // Auto-play audio for listening exercises
+  if (ex.type === 'listening' && ex.audio) {
+    setTimeout(() => speakItalian(ex.audio), 500);
+  }
+}
+
+// ── MULTIPLE CHOICE ──
+function renderMC(ex, area) {
+  area.innerHTML = `
+    <div class="ex-prompt-label">Select the correct answer</div>
+    ${ex.audio ? `<button class="audio-btn" onclick="speakItalian('${ex.audio.replace(/'/g,"\\'")}')"><span class="speaker">🔊</span><span>${ex.audio}</span></button>` : ''}
+    <div class="ex-question">${ex.prompt}</div>
+    <div class="mc-options" id="mc-options"></div>`;
+
+  const opts = document.getElementById('mc-options');
+  const letters = ['A','B','C','D'];
+  ex.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'mc-btn';
+    btn.innerHTML = `<span class="mc-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => {
+      if (STATE.phase !== 'answering') return;
+      document.querySelectorAll('.mc-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      STATE.selected = i;
+      playTick();
+      activateCheck();
+    };
+    opts.appendChild(btn);
+  });
+}
+
+// ── TAP WORD ──
+function renderTapWord(ex, area) {
+  const allTokens = [...ex.tokens, ...(ex.distractors || [])].sort(() => Math.random() - .5);
+  area.innerHTML = `
+    <div class="ex-prompt-label">Arrange the words</div>
+    <div class="ex-question">${ex.prompt}</div>
+    <div class="answer-area" id="answer-area"></div>
+    <div class="word-bank" id="word-bank"></div>`;
+
+  const bank = document.getElementById('word-bank');
+  allTokens.forEach(token => {
+    const tile = document.createElement('button');
+    tile.className = 'word-tile';
+    tile.textContent = token;
+    tile.dataset.word = token;
+    tile.onclick = () => tapWordAdd(tile, token);
+    bank.appendChild(tile);
+  });
+}
+
+function tapWordAdd(tile, word) {
+  if (STATE.phase !== 'answering') return;
+  if (tile.classList.contains('in-answer')) {
+    tile.classList.remove('in-answer');
+    STATE.tapAnswer = STATE.tapAnswer.filter(w => w !== word || (() => { const idx = STATE.tapAnswer.lastIndexOf(word); if (idx > -1) { STATE.tapAnswer.splice(idx, 1); return true; } return false; })());
+    // fix: properly remove one instance
+    const idx = STATE.tapAnswer.indexOf(word);
+    if (idx > -1) STATE.tapAnswer.splice(idx, 1);
+  } else {
+    tile.classList.add('in-answer');
+    STATE.tapAnswer.push(word);
+    playTick();
+  }
+
+  const answerArea = document.getElementById('answer-area');
+  answerArea.textContent = STATE.tapAnswer.join(' ');
+  answerArea.classList.toggle('has-words', STATE.tapAnswer.length > 0);
+
+  if (STATE.tapAnswer.length > 0) activateCheck();
+  else deactivateCheck();
+}
+
+// ── TRANSLATION ──
+function renderTranslation(ex, area) {
+  area.innerHTML = `
+    <div class="ex-prompt-label">Type in Italian</div>
+    <div class="ex-question">${ex.prompt}</div>
+    <textarea class="translation-input" id="trans-input" placeholder="Type your translation..."></textarea>
+    <div class="correct-answer-hint" id="correct-hint"></div>`;
+
+  const input = document.getElementById('trans-input');
+  input.addEventListener('input', () => {
+    if (input.value.trim().length > 0) activateCheck();
+    else deactivateCheck();
+  });
+  input.focus();
+}
+
+// ── FILL BLANK ──
+function renderFillBlank(ex, area) {
+  const sentence = ex.sentence.replace('___', '<span class="fill-blank" id="filled-blank">___</span>');
+  area.innerHTML = `
+    <div class="ex-prompt-label">Fill in the blank</div>
+    <div class="ex-question">${ex.prompt}</div>
+    <div class="fill-sentence">${sentence}</div>
+    <div class="fill-options" id="fill-options"></div>`;
+
+  const opts = document.getElementById('fill-options');
+  const letters = ['A','B','C','D'];
+  ex.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'mc-btn';
+    btn.innerHTML = `<span class="mc-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => {
+      if (STATE.phase !== 'answering') return;
+      document.querySelectorAll('#fill-options .mc-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      STATE.selected = i;
+      document.getElementById('filled-blank').textContent = opt;
+      playTick();
+      activateCheck();
+    };
+    opts.appendChild(btn);
+  });
+}
+
+// ── MATCHING ──
+function renderMatching(ex, area) {
+  const pairs = [...ex.pairs].sort(() => Math.random() - .5);
+  const rightItems = pairs.map(p => p[1]).sort(() => Math.random() - .5);
+  area.innerHTML = `
+    <div class="ex-prompt-label">Tap matching pairs</div>
+    <div class="ex-question">${ex.prompt}</div>
+    <div class="matching-grid" id="matching-grid"></div>`;
+
+  const grid = document.getElementById('matching-grid');
+  const leftBtns = [], rightBtns = [];
+
+  pairs.forEach((pair, i) => {
+    const lb = document.createElement('button');
+    lb.className = 'match-btn'; lb.textContent = pair[0];
+    lb.dataset.idx = i; lb.dataset.side = 'left'; lb.dataset.value = pair[0];
+    lb.onclick = () => matchSelect(lb, 'left', i, pair[0]);
+    leftBtns.push(lb); grid.appendChild(lb);
+
+    const rb = document.createElement('button');
+    rb.className = 'match-btn'; rb.textContent = rightItems[i];
+    rb.dataset.side = 'right'; rb.dataset.value = rightItems[i];
+    rb.onclick = () => matchSelect(rb, 'right', i, rightItems[i]);
+    rightBtns.push(rb); grid.appendChild(rb);
+  });
+
+  STATE.matchPairs = pairs;
+  STATE.matchLeft = leftBtns;
+  STATE.matchRight = rightBtns;
+}
+
+function matchSelect(btn, side, idx, value) {
+  if (STATE.phase !== 'answering') return;
+  const ms = STATE.matchState;
+
+  if (side === 'left') {
+    STATE.matchLeft.forEach(b => { if (!b.classList.contains('matched')) b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    ms.leftSel = { btn, value };
+  } else {
+    if (!ms.leftSel) return;
+    const leftVal = ms.leftSel.value;
+    const correctPair = STATE.matchPairs.find(p => p[0] === leftVal);
+    if (correctPair && correctPair[1] === value) {
+      ms.leftSel.btn.classList.remove('selected'); ms.leftSel.btn.classList.add('matched');
+      btn.classList.add('matched');
+      ms.matched.push(leftVal);
+      ms.leftSel = null;
+      playTick();
+      if (ms.matched.length === STATE.matchPairs.length) {
+        STATE.selected = 'all_matched';
+        activateCheck();
+      }
+    } else {
+      ms.leftSel.btn.classList.add('wrong-match'); btn.classList.add('wrong-match');
+      playWrong();
+      setTimeout(() => { ms.leftSel?.btn.classList.remove('selected','wrong-match'); btn.classList.remove('wrong-match'); ms.leftSel = null; }, 500);
+    }
+  }
+}
+
+// ── LISTENING ──
+function renderListening(ex, area) {
+  area.innerHTML = `
+    <div class="ex-prompt-label">What did you hear?</div>
+    <button class="audio-btn" onclick="speakItalian('${(ex.audio||'').replace(/'/g,"\\'")}')">
+      <span class="speaker">🔊</span><span style="font-size:1.1em;font-weight:900">${ex.audio || 'Listen'}</span>
+    </button>
+    <div class="ex-question">${ex.prompt}</div>
+    <div class="mc-options" id="mc-options"></div>`;
+
+  const opts = document.getElementById('mc-options');
+  const letters = ['A','B','C','D'];
+  ex.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'mc-btn';
+    btn.innerHTML = `<span class="mc-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => {
+      if (STATE.phase !== 'answering') return;
+      document.querySelectorAll('.mc-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      STATE.selected = i;
+      playTick();
+      activateCheck();
+    };
+    opts.appendChild(btn);
+  });
+}
+
+// ── CHECK BUTTON ──
+function activateCheck() {
+  const btn = document.getElementById('check-btn');
+  btn.className = 'check-btn active';
+}
+
+function deactivateCheck() {
+  const btn = document.getElementById('check-btn');
+  btn.className = 'check-btn inactive';
+}
+
+function handleCheck() {
+  if (STATE.phase === 'feedback') { nextExercise(); return; }
+  if (STATE.phase !== 'answering') return;
+  const ex = EXERCISES[STATE.idx];
+  const correct = evaluateAnswer(ex);
+  STATE.phase = 'feedback';
+
+  if (correct) {
+    STATE.correct++;
+    STATE.combo++;
+    const xpGain = 10 + Math.min((STATE.combo - 1) * 3, 15);
+    STATE.xp += xpGain;
+    showFeedback(true, ex);
+    playCorrect();
+    showCombo();
+  } else {
+    STATE.mistakes++;
+    STATE.combo = 0;
+    loseHeart();
+    showFeedback(false, ex);
+    playWrong();
+  }
+
+  highlightAnswer(ex, correct);
+  document.getElementById('xp-chip').textContent = '+' + STATE.xp + ' XP';
+}
+
+function evaluateAnswer(ex) {
+  switch (ex.type) {
+    case 'multiple_choice':
+    case 'listening':
+      return STATE.selected === ex.correct;
+    case 'fill_blank':
+      return STATE.selected === ex.correct;
+    case 'tap_word':
+      const ans = STATE.tapAnswer.join(' ').toLowerCase().trim();
+      const expected = ex.tokens.join(' ').toLowerCase().trim();
+      return ans === expected;
+    case 'translation':
+      const input = document.getElementById('trans-input')?.value.toLowerCase().trim();
+      const accept = [ex.answer.toLowerCase(), ...(ex.accept_also || []).map(s => s.toLowerCase())];
+      return accept.some(a => levenshtein(input, a) <= 2);
+    case 'matching':
+      return STATE.selected === 'all_matched';
+    default:
+      return false;
+  }
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length:m+1}, (_,i) => Array.from({length:n+1}, (_,j) => i||j));
+  for (let i=1;i<=m;i++) for (let j=1;j<=n;j++) dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function highlightAnswer(ex, correct) {
+  if (ex.type === 'multiple_choice' || ex.type === 'listening') {
+    const btns = document.querySelectorAll('.mc-btn');
+    btns.forEach((b, i) => { b.disabled = true; if (i === ex.correct) b.classList.add('correct'); });
+    if (!correct && STATE.selected !== null) btns[STATE.selected]?.classList.add('wrong');
+  } else if (ex.type === 'fill_blank') {
+    const btns = document.querySelectorAll('#fill-options .mc-btn');
+    btns.forEach((b, i) => { b.disabled = true; if (i === ex.correct) b.classList.add('correct'); });
+    if (!correct && STATE.selected !== null) btns[STATE.selected]?.classList.add('wrong');
+  } else if (ex.type === 'translation') {
+    const input = document.getElementById('trans-input');
+    if (input) { input.disabled = true; input.classList.add(correct ? 'correct' : 'wrong'); }
+    if (!correct) {
+      const hint = document.getElementById('correct-hint');
+      if (hint) { hint.textContent = '✓ Correct: ' + ex.answer; hint.classList.add('show'); }
+    }
+  } else if (ex.type === 'tap_word') {
+    document.querySelectorAll('.word-tile').forEach(t => t.disabled = true);
+    const aa = document.getElementById('answer-area');
+    if (aa) aa.style.borderColor = correct ? 'var(--g)' : 'var(--r)';
+  }
+}
+
+function showFeedback(correct, ex) {
+  const bar = document.getElementById('feedback-bar');
+  const msg = document.getElementById('feedback-msg');
+  const exp = document.getElementById('feedback-exp');
+  const btn = document.getElementById('check-btn');
+
+  bar.className = 'feedback-bar ' + (correct ? 'correct-bar' : 'wrong-bar');
+  msg.className = 'feedback-msg show ' + (correct ? 'correct' : 'wrong');
+  msg.textContent = correct
+    ? ENCOURAGEMENTS_CORRECT[Math.floor(Math.random() * ENCOURAGEMENTS_CORRECT.length)]
+    : ENCOURAGEMENTS_WRONG[Math.floor(Math.random() * ENCOURAGEMENTS_WRONG.length)];
+
+  if (ex.feedback) {
+    exp.className = 'feedback-explanation show';
+    exp.textContent = ex.feedback;
+  }
+
+  btn.className = 'check-btn ' + (correct ? 'continue' : 'continue-wrong');
+  btn.textContent = 'CONTINUE →';
+  btn.onclick = nextExercise;
+}
+
+function nextExercise() {
+  STATE.idx++;
+  if (STATE.idx >= EXERCISES.length) {
+    completeLesson();
+  } else {
+    loadExercise();
+  }
+}
+
+// ── COMPLETE ──
+function completeLesson() {
+  const screen = document.getElementById('complete-screen');
+  screen.classList.add('show');
+
+  const pct = STATE.correct > 0 ? Math.round(STATE.correct / (STATE.correct + STATE.mistakes) * 100) : 0;
+  const sub = STATE.mistakes === 0 ? '⭐ Perfect score! No mistakes!' : pct >= 80 ? 'Ottimo lavoro!' : 'Keep practicing — you\'ll get it!';
+  document.getElementById('complete-sub').textContent = sub;
+
+  document.getElementById('complete-stats').innerHTML = `
+    <div class="cstat"><span class="cstat-val" style="color:var(--g)">${STATE.correct}</span><span class="cstat-lbl">Correct</span></div>
+    <div class="cstat"><span class="cstat-val" style="color:${STATE.mistakes?'var(--r)':'var(--g)'}">${STATE.mistakes}</span><span class="cstat-lbl">Mistakes</span></div>
+    <div class="cstat"><span class="cstat-val" style="color:var(--gold)">${STATE.combo}</span><span class="cstat-lbl">Best Combo</span></div>`;
+
+  const finalXP = STATE.xp + (STATE.mistakes === 0 ? 5 : 0);
+  document.getElementById('complete-xp').textContent = '+' + finalXP + ' XP earned!';
+
+  launchConfetti();
+
+  fetch('/api/complete-lesson', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      lesson_id: LESSON.id,
+      xp: finalXP,
+      mistakes: STATE.mistakes,
+      correct: STATE.correct,
+    })
+  }).catch(() => {});
+}
+
+function finishLesson() {
+  window.location.href = '/';
+}
+
+function practiceMode() {
+  STATE.practiceMode = true;
+  STATE.hearts = 5;
+  renderHearts();
+  document.getElementById('noheart-overlay').classList.remove('show');
+}
+
+function launchConfetti() {
+  const cols = ['#58CC02','#FFC800','#FF4B4B','#1CB0F6','#CE82FF','#FF9600'];
+  for (let i = 0; i < 90; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      const sz = 6 + Math.random() * 10;
+      el.style.cssText = `position:fixed;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}vw;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};z-index:9999;pointer-events:none;animation:confettiFall ${1.4+Math.random()*1.6}s ease-in forwards`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }, Math.random() * 700);
+  }
+}
+
+boot();
+</script>
+</body>
+</html>

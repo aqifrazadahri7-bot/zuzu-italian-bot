@@ -4,6 +4,7 @@ from authlib.integrations.flask_client import OAuth
 import google.generativeai as genai
 import os, json
 from dotenv import load_dotenv
+from datetime import date, timedelta
 import uuid
 
 load_dotenv()
@@ -74,6 +75,113 @@ BOOKS = [
 ]
 
 
+LESSONS = [
+  {"id":"greetings","unit":1,"unit_name":"I Fondamentali","unit_subtitle":"The Basics","unit_color":"#58CC02","order":1,"title":"Greetings","subtitle":"Say ciao like a local","icon":"👋","xp_reward":15,"exercises":[
+    {"type":"multiple_choice","prompt":"What does 'Ciao' mean?","audio":"Ciao","options":["Hello / Bye","Thank you","Please","Sorry"],"correct":0,"feedback":"Ciao works for both hello AND goodbye — very casual!"},
+    {"type":"multiple_choice","prompt":"How do you say 'Good morning'?","options":["Buongiorno","Buonasera","Buonanotte","Prego"],"correct":0,"feedback":"Buongiorno = Good day. Use until ~5pm."},
+    {"type":"tap_word","prompt":"Arrange the words: 'My name is Marco'","tokens":["Mi","chiamo","Marco"],"distractors":["Sono","Ho","Tu"],"feedback":"Mi chiamo = literally 'I call myself'"},
+    {"type":"multiple_choice","prompt":"How do you say 'How are you?' (informal)?","options":["Come stai?","Come sta?","Come va?","Come sei?"],"correct":0,"feedback":"Come stai? is informal. Come sta? is formal."},
+    {"type":"matching","prompt":"Match the Italian to the English","pairs":[["Ciao","Hello/Bye"],["Grazie","Thank you"],["Prego","You're welcome"],["Scusi","Excuse me"]]},
+    {"type":"fill_blank","prompt":"___ (good morning)","sentence":"___ , come stai?","options":["Buongiorno","Buonanotte","Arrivederci"],"correct":0,"feedback":"Buongiorno is used until afternoon!"}
+  ]},
+  {"id":"numbers","unit":1,"unit_name":"I Fondamentali","unit_subtitle":"The Basics","unit_color":"#58CC02","order":2,"title":"Numbers","subtitle":"Count to twenty","icon":"🔢","xp_reward":15,"exercises":[
+    {"type":"multiple_choice","prompt":"How do you say 'five'?","options":["cinque","quattro","sei","tre"],"correct":0,"feedback":"cinque = 5, quattro = 4, sei = 6, tre = 3"},
+    {"type":"multiple_choice","prompt":"What number is 'diciotto'?","options":["17","18","19","20"],"correct":1,"feedback":"Diciotto = 18. Diciassette=17, Diciannove=19, Venti=20"},
+    {"type":"tap_word","prompt":"Arrange: 'I have ten cats'","tokens":["Ho","dieci","gatti"],"distractors":["Sono","venti","cani"],"feedback":"Ho = I have, dieci = 10, gatti = cats"},
+    {"type":"fill_blank","prompt":"___ anni (30 years old)","sentence":"Ho ___ anni.","options":["trenta","venti","quaranta"],"correct":0,"feedback":"Trenta = 30. Ho trenta anni = I am 30 years old."},
+    {"type":"multiple_choice","prompt":"How do you say 'first'?","options":["primo","uno","inizio","prima volta"],"correct":0,"feedback":"Primo/prima = first (ordinal)"},
+    {"type":"matching","prompt":"Match the numbers","pairs":[["uno","one"],["cinque","five"],["dieci","ten"],["venti","twenty"]]}
+  ]},
+  {"id":"family","unit":1,"unit_name":"I Fondamentali","unit_subtitle":"The Basics","unit_color":"#58CC02","order":3,"title":"Family","subtitle":"Talk about your family","icon":"👨‍👩‍👧","xp_reward":15,"exercises":[
+    {"type":"multiple_choice","prompt":"What does 'fratello' mean?","options":["brother","sister","father","uncle"],"correct":0,"feedback":"Fratello = brother. Sorella = sister."},
+    {"type":"multiple_choice","prompt":"How do you say 'my mother'?","options":["mia madre","mio padre","mia sorella","mio fratello"],"correct":0,"feedback":"mia = my (feminine). madre = mother."},
+    {"type":"tap_word","prompt":"Arrange: 'I have a sister'","tokens":["Ho","una","sorella"],"distractors":["Sono","mia","padre"],"feedback":"Ho una sorella = I have a sister"},
+    {"type":"translation","prompt":"Translate: 'My father is a doctor'","answer":"mio padre è medico","accept_also":["il mio padre è medico","mio padre è un medico"],"feedback":"Mio padre = my father. È medico = is a doctor."},
+    {"type":"matching","prompt":"Match family members","pairs":[["padre","father"],["madre","mother"],["fratello","brother"],["sorella","sister"]]},
+    {"type":"fill_blank","prompt":"___ chiamo Marco","sentence":"Mi ___ Marco.","options":["chiamo","sono","ho"],"correct":0,"feedback":"Mi chiamo = My name is (I call myself)"}
+  ]},
+  {"id":"colors","unit":1,"unit_name":"I Fondamentali","unit_subtitle":"The Basics","unit_color":"#58CC02","order":4,"title":"Colors & Descriptions","subtitle":"Describe the world around you","icon":"🎨","xp_reward":20,"exercises":[
+    {"type":"multiple_choice","prompt":"How do you say 'red'?","options":["rosso","blu","verde","giallo"],"correct":0,"feedback":"Rosso = red, blu = blue, verde = green, giallo = yellow"},
+    {"type":"multiple_choice","prompt":"'The sky is ___' (blue)","options":["blu","rosso","nero","bianco"],"correct":0,"feedback":"Il cielo è blu. Blu is for strong blue; azzurro for light blue."},
+    {"type":"tap_word","prompt":"Arrange: 'The cat is black'","tokens":["Il","gatto","è","nero"],"distractors":["La","bianco","rosso"],"feedback":"Il gatto è nero = The cat is black. Nero = black."},
+    {"type":"translation","prompt":"Translate: 'The dress is beautiful'","answer":"il vestito è bello","accept_also":["il vestito è bellissimo","il vestito è molto bello"],"feedback":"Bello = beautiful. Bellissimo = very beautiful."},
+    {"type":"fill_blank","prompt":"La macchina è ___ (red)","sentence":"La macchina è ___.","options":["rossa","rosso","rosse"],"correct":0,"feedback":"La macchina (feminine) → rossa. Il fiore (masculine) → rosso."},
+    {"type":"multiple_choice","prompt":"How do you say 'big'?","options":["grande","piccolo","alto","basso"],"correct":0,"feedback":"Grande = big. Piccolo = small. Alto = tall. Basso = short."}
+  ]},
+  {"id":"cafe","unit":2,"unit_name":"Vita Quotidiana","unit_subtitle":"Daily Life","unit_color":"#1CB0F6","order":5,"title":"At the Café","subtitle":"Order like an Italian","icon":"☕","xp_reward":20,"exercises":[
+    {"type":"multiple_choice","prompt":"How do you say 'I'd like a coffee'?","options":["Vorrei un caffè","Voglio un caffè","Dammi un caffè","Prendo caffè"],"correct":0,"feedback":"Vorrei is more polite than voglio. Always use vorrei in a café!"},
+    {"type":"multiple_choice","prompt":"How do you ask for the bill?","options":["Il conto, per favore","La lista, grazie","Quanto costa?","Posso pagare?"],"correct":0,"feedback":"Il conto, per favore = The bill, please. Very useful!"},
+    {"type":"tap_word","prompt":"Arrange: 'A cappuccino and a croissant'","tokens":["Un","cappuccino","e","un","cornetto"],"distractors":["La","il","due"],"feedback":"Un cappuccino e un cornetto — the classic Italian breakfast!"},
+    {"type":"translation","prompt":"Translate: 'Where is the bathroom?'","answer":"dov'è il bagno","accept_also":["dov'è il bagno?","dove è il bagno"],"feedback":"Dov'è = where is. Bagno = bathroom."},
+    {"type":"fill_blank","prompt":"Un ___ alla crema (croissant)","sentence":"Vorrei un ___ alla crema.","options":["cornetto","caffè","gelato"],"correct":0,"feedback":"Cornetto alla crema = cream-filled croissant"},
+    {"type":"matching","prompt":"Match the café vocabulary","pairs":[["caffè","coffee"],["latte","milk"],["zucchero","sugar"],["acqua","water"]]}
+  ]},
+  {"id":"food","unit":2,"unit_name":"Vita Quotidiana","unit_subtitle":"Daily Life","unit_color":"#1CB0F6","order":6,"title":"Food & Eating","subtitle":"Mangia bene!","icon":"🍝","xp_reward":20,"exercises":[
+    {"type":"multiple_choice","prompt":"How do you say 'I like pasta'?","options":["Mi piace la pasta","Voglio la pasta","Mangio la pasta","Amo pasta"],"correct":0,"feedback":"Mi piace = I like. Mi piacciono = I like (plural). Mi piace la pasta!"},
+    {"type":"multiple_choice","prompt":"What does 'delizioso' mean?","options":["delicious","beautiful","expensive","spicy"],"correct":0,"feedback":"Delizioso/a = delicious. A very useful word in Italy!"},
+    {"type":"tap_word","prompt":"Arrange: 'I eat bread every day'","tokens":["Mangio","il","pane","ogni","giorno"],"distractors":["bevo","la","pasta"],"feedback":"Mangio = I eat. Ogni giorno = every day."},
+    {"type":"translation","prompt":"Translate: 'The food is very good'","answer":"il cibo è molto buono","accept_also":["il cibo è buonissimo","il cibo è molto buono!"],"feedback":"Cibo = food. Buono = good. Molto = very."},
+    {"type":"matching","prompt":"Match the food items","pairs":[["pane","bread"],["carne","meat"],["pesce","fish"],["formaggio","cheese"]]},
+    {"type":"fill_blank","prompt":"Mi ___ il gelato (I like)","sentence":"Mi ___ il gelato.","options":["piace","voglio","mangio"],"correct":0,"feedback":"Mi piace = I like. Mi piacciono = I like (plural things)."}
+  ]},
+  {"id":"directions","unit":2,"unit_name":"Vita Quotidiana","unit_subtitle":"Daily Life","unit_color":"#1CB0F6","order":7,"title":"Getting Around","subtitle":"Navigate Italian streets","icon":"🗺️","xp_reward":20,"exercises":[
+    {"type":"multiple_choice","prompt":"How do you say 'Turn right'?","options":["Gira a destra","Gira a sinistra","Vai dritto","Torna indietro"],"correct":0,"feedback":"Destra = right. Sinistra = left. Dritto = straight."},
+    {"type":"multiple_choice","prompt":"'Straight ahead' in Italian?","options":["Dritto","Destra","Sinistra","Vicino"],"correct":0,"feedback":"Vai dritto = go straight ahead."},
+    {"type":"tap_word","prompt":"Arrange: 'Where is the hotel?'","tokens":["Dov'è","l'albergo"],"distractors":["Come","il","stazione"],"feedback":"Dov'è = where is. L'albergo = the hotel."},
+    {"type":"translation","prompt":"Translate: 'The bank is near the station'","answer":"la banca è vicino alla stazione","accept_also":["la banca è vicino alla stazione."],"feedback":"Vicino a = near. La stazione = the station."},
+    {"type":"fill_blank","prompt":"Gira a ___ (left)","sentence":"Poi gira a ___.","options":["sinistra","destra","dritto"],"correct":0,"feedback":"A sinistra = to the left. A destra = to the right."},
+    {"type":"matching","prompt":"Match direction words","pairs":[["destra","right"],["sinistra","left"],["dritto","straight"],["vicino","near"]]}
+  ]},
+  {"id":"shopping","unit":2,"unit_name":"Vita Quotidiana","unit_subtitle":"Daily Life","unit_color":"#1CB0F6","order":8,"title":"Shopping","subtitle":"Fare shopping in Italia","icon":"🛍️","xp_reward":25,"exercises":[
+    {"type":"multiple_choice","prompt":"How do you ask 'How much does it cost?'","options":["Quanto costa?","Cosa costa?","Che prezzo?","Quanto è?"],"correct":0,"feedback":"Quanto costa? = How much does it cost? Quanto costano? = How much do they cost?"},
+    {"type":"multiple_choice","prompt":"How do you say 'too expensive'?","options":["Troppo caro","Molto caro","Caro troppo","È caro"],"correct":0,"feedback":"Troppo = too (much). Caro = expensive. Economico = cheap."},
+    {"type":"tap_word","prompt":"Arrange: 'The shoes cost fifty euros'","tokens":["Le","scarpe","costano","cinquanta","euro"],"distractors":["Il","costa","trenta"],"feedback":"Le scarpe costano = the shoes cost. Cinquanta = 50."},
+    {"type":"translation","prompt":"Translate: 'I want this shirt'","answer":"voglio questa camicia","accept_also":["vorrei questa camicia","voglio questa camicia."],"feedback":"Voglio = I want. Questa = this (feminine). Camicia = shirt."},
+    {"type":"fill_blank","prompt":"___ costa questo? (how much)","sentence":"___ costa questo?","options":["Quanto","Come","Cosa"],"correct":0,"feedback":"Quanto = how much. Questo = this."},
+    {"type":"multiple_choice","prompt":"'Do you have this in size 42?' → 'Ce l'ha in ___'","options":["taglia 42","numero 42","misura 42","size 42"],"correct":0,"feedback":"Taglia = clothing size. Numero = shoe size."}
+  ]}
+]
+
+UNITS = [
+  {"id":1,"name":"I Fondamentali","subtitle":"The Basics","color":"#58CC02","icon":"⭐","lesson_ids":["greetings","numbers","family","colors"]},
+  {"id":2,"name":"Vita Quotidiana","subtitle":"Daily Life","color":"#1CB0F6","icon":"🌟","lesson_ids":["cafe","food","directions","shopping"]},
+  {"id":3,"name":"Il Passato","subtitle":"The Past","color":"#CE82FF","icon":"🔒","lesson_ids":[],"locked":True},
+  {"id":4,"name":"Espressioni","subtitle":"Complex Ideas","color":"#FF9600","icon":"🔒","lesson_ids":[],"locked":True},
+]
+
+ACHIEVEMENTS = [
+  {"id":"first_steps","title":"First Steps","desc":"Complete your first lesson","icon":"🌱","xp":5},
+  {"id":"on_fire","title":"On Fire","desc":"3-day streak","icon":"🔥","xp":10},
+  {"id":"century","title":"Century","desc":"Earn 100 XP total","icon":"💯","xp":15},
+  {"id":"perfect","title":"Perfectionist","desc":"Finish a lesson without any mistakes","icon":"⭐","xp":20},
+  {"id":"unit1","title":"Unit 1 Master","desc":"Complete all Unit 1 lessons","icon":"🏆","xp":30},
+  {"id":"bookworm","title":"Bookworm","desc":"Read 3 Italian stories","icon":"📚","xp":10},
+  {"id":"week","title":"One Week","desc":"7-day streak","icon":"🗓️","xp":25},
+  {"id":"xp500","title":"XP Champion","desc":"Earn 500 XP","icon":"⚡","xp":30},
+]
+
+DAILY_QUESTS = [
+  {"id":"lessons","title":"Complete 3 Lessons","icon":"📚","target":3,"xp":30},
+  {"id":"earn_xp","title":"Earn 50 XP","icon":"⚡","target":50,"xp":20},
+  {"id":"speak","title":"Use Zuzu Chat","icon":"🎤","target":1,"xp":25},
+]
+
+
+def default_progress():
+    return {
+        'day': 1, 'level': 'A1', 'completed_days': [],
+        'xp': 0, 'streak': 0, 'hearts': 5, 'max_hearts': 5,
+        'last_activity': None,
+        'completed_lessons': [],
+        'total_questions': 0, 'correct_questions': 0,
+        'xp_today': 0, 'quest_date': None,
+        'quests': {'lessons': 0, 'earn_xp': 0, 'speak': 0},
+        'quests_done': [],
+        'achievements': [],
+        'streak_freezes': 1,
+    }
+
+
 def build_prompt(level="B1"):
     return LEVEL_PROMPTS.get(level, LEVEL_PROMPTS["B1"]) + BASE_RULES
 
@@ -139,10 +247,153 @@ def logout():
 @app.route('/')
 @login_required
 def index():
-    return render_template('dashboard.html',
+    uid = session.get('user_id', 'default')
+    if uid not in user_progress:
+        user_progress[uid] = default_progress()
+    prog = user_progress[uid]
+    today = str(date.today())
+    if prog.get('quest_date') != today:
+        prog['quests'] = {'lessons': 0, 'earn_xp': 0, 'speak': 0}
+        prog['quests_done'] = []
+        prog['xp_today'] = 0
+        prog['quest_date'] = today
+    return render_template('home.html',
         user_name=session.get('user_name', 'Learner'),
-        user_picture=session.get('user_picture', '')
+        user_picture=session.get('user_picture', ''),
+        progress_json=json.dumps(prog),
+        lessons_json=json.dumps(LESSONS),
+        units_json=json.dumps(UNITS),
+        achievements_json=json.dumps(ACHIEVEMENTS),
+        quests_json=json.dumps(DAILY_QUESTS),
     )
+
+
+@app.route('/lesson/<lesson_id>')
+@login_required
+def lesson_page(lesson_id):
+    lesson_data = next((l for l in LESSONS if l['id'] == lesson_id), None)
+    if not lesson_data:
+        return redirect('/')
+    uid = session.get('user_id', 'default')
+    if uid not in user_progress:
+        user_progress[uid] = default_progress()
+    prog = user_progress[uid]
+    return render_template('lesson.html',
+        lesson_json=json.dumps(lesson_data),
+        user_name=session.get('user_name', 'Learner'),
+        user_picture=session.get('user_picture', ''),
+        hearts=prog.get('hearts', 5),
+        current_xp=prog.get('xp', 0),
+    )
+
+
+@app.route('/api/complete-lesson', methods=['POST'])
+@login_required
+def complete_lesson():
+    data = request.get_json()
+    lesson_id = data.get('lesson_id', '')
+    xp_earned = int(data.get('xp', 0))
+    mistakes = int(data.get('mistakes', 0))
+    correct = int(data.get('correct', 0))
+
+    uid = session.get('user_id', 'default')
+    if uid not in user_progress:
+        user_progress[uid] = default_progress()
+    prog = user_progress[uid]
+
+    today = str(date.today())
+
+    # Reset daily quests if new day
+    if prog.get('quest_date') != today:
+        prog['quests'] = {'lessons': 0, 'earn_xp': 0, 'speak': 0}
+        prog['quests_done'] = []
+        prog['xp_today'] = 0
+        prog['quest_date'] = today
+
+    # Completed lessons
+    if lesson_id and lesson_id not in prog.get('completed_lessons', []):
+        prog.setdefault('completed_lessons', []).append(lesson_id)
+
+    # XP
+    prog['xp'] = prog.get('xp', 0) + xp_earned
+    prog['xp_today'] = prog.get('xp_today', 0) + xp_earned
+
+    # Streak
+    last = prog.get('last_activity')
+    if last != today:
+        yesterday = str(date.today() - timedelta(days=1))
+        if last == yesterday:
+            prog['streak'] = prog.get('streak', 0) + 1
+        elif last is None:
+            prog['streak'] = 1
+        else:
+            if prog.get('streak_freezes', 0) > 0:
+                prog['streak_freezes'] -= 1
+            else:
+                prog['streak'] = 1
+        prog['last_activity'] = today
+
+    # Accuracy
+    prog['total_questions'] = prog.get('total_questions', 0) + correct + mistakes
+    prog['correct_questions'] = prog.get('correct_questions', 0) + correct
+    tq = prog['total_questions']
+    prog['accuracy'] = round(prog['correct_questions'] / tq * 100) if tq > 0 else 100
+
+    # Quests
+    q = prog.get('quests', {'lessons': 0, 'earn_xp': 0, 'speak': 0})
+    done = prog.get('quests_done', [])
+    bonus_xp = 0
+    q['lessons'] = q.get('lessons', 0) + 1
+    if q['lessons'] >= 3 and 'lessons' not in done:
+        done.append('lessons'); bonus_xp += 30
+    q['earn_xp'] = prog['xp_today']
+    if q['earn_xp'] >= 50 and 'earn_xp' not in done:
+        done.append('earn_xp'); bonus_xp += 20
+    prog['quests'] = q
+    prog['quests_done'] = done
+    if bonus_xp:
+        prog['xp'] += bonus_xp
+
+    # Achievements
+    achieved = prog.get('achievements', [])
+    new_ach = []
+    checks = [
+        ('first_steps', len(prog.get('completed_lessons', [])) >= 1),
+        ('on_fire', prog.get('streak', 0) >= 3),
+        ('week', prog.get('streak', 0) >= 7),
+        ('century', prog.get('xp', 0) >= 100),
+        ('xp500', prog.get('xp', 0) >= 500),
+        ('perfect', mistakes == 0 and correct >= 4),
+        ('unit1', all(lid in prog.get('completed_lessons', []) for lid in ['greetings','numbers','family','colors'])),
+    ]
+    for aid, cond in checks:
+        if cond and aid not in achieved:
+            achieved.append(aid)
+            new_ach.append(aid)
+    prog['achievements'] = achieved
+
+    return jsonify({
+        'xp': prog['xp'], 'streak': prog['streak'], 'hearts': prog.get('hearts', 5),
+        'completed_lessons': prog['completed_lessons'],
+        'quests': prog['quests'], 'quests_done': prog['quests_done'],
+        'achievements': prog['achievements'], 'new_achievements': new_ach,
+        'accuracy': prog.get('accuracy', 100), 'bonus_xp': bonus_xp,
+    })
+
+
+@app.route('/api/hearts', methods=['POST'])
+@login_required
+def update_hearts():
+    data = request.get_json()
+    uid = session.get('user_id', 'default')
+    if uid not in user_progress:
+        user_progress[uid] = default_progress()
+    prog = user_progress[uid]
+    if data.get('action') == 'lose':
+        prog['hearts'] = max(0, prog.get('hearts', 5) - 1)
+    elif data.get('action') == 'restore':
+        prog['hearts'] = 5
+    return jsonify({'hearts': prog['hearts']})
 
 
 @app.route('/chat')

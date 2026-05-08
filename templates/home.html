@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Zuzu — Learn Italian</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#131313">
+<style>
+/* ── Design System ── */
+:root {
+  --g: #58CC02; --g-dk: #46A302; --g-bg: rgba(88,204,2,.12); --g-border: rgba(88,204,2,.3);
+  --b: #1CB0F6; --b-bg: rgba(28,176,246,.12);
+  --r: #FF4B4B; --r-bg: rgba(255,75,75,.12); --r-border: rgba(255,75,75,.35);
+  --gold: #FFC800; --gold-bg: rgba(255,200,0,.12);
+  --purple: #CE82FF; --orange: #FF9600;
+  --bg: #131313; --c1: #1c1c1c; --c2: #252525; --c3: #2e2e2e;
+  --border: rgba(255,255,255,.07); --border2: rgba(255,255,255,.12);
+  --t1: #fff; --t2: rgba(255,255,255,.7); --t3: rgba(255,255,255,.4);
+  --radius: 16px; --radius-lg: 20px; --radius-xl: 24px;
+  --shadow: 0 4px 20px rgba(0,0,0,.35); --shadow-lg: 0 8px 32px rgba(0,0,0,.45);
+  --font: 'Nunito', sans-serif; --font-body: 'Inter', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--t1); min-height: 100vh; overflow-x: hidden; padding-bottom: 80px; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--c3); border-radius: 2px; }
+
+/* ── TOP NAV ── */
+.top-nav {
+  position: sticky; top: 0; z-index: 200;
+  height: 58px; background: rgba(19,19,19,.95); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 16px; gap: 12px;
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+.nav-logo { display: flex; align-items: center; gap: 7px; text-decoration: none; margin-right: 4px; }
+.nav-logo .flag { font-size: 22px; }
+.nav-logo strong { font-family: var(--font); font-size: 1.15em; font-weight: 900; color: var(--t1); letter-spacing: -0.3px; }
+.nav-logo strong em { color: var(--g); font-style: normal; }
+.stat-pill { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 20px; border: 1.5px solid; cursor: default; transition: transform .15s; }
+.stat-pill:active { transform: scale(.95); }
+.pill-streak { border-color: rgba(255,153,0,.35); background: rgba(255,153,0,.08); }
+.pill-xp { border-color: rgba(255,200,0,.3); background: rgba(255,200,0,.07); }
+.pill-hearts { border-color: rgba(255,75,75,.3); background: rgba(255,75,75,.07); }
+.stat-pill .icon { font-size: 16px; }
+.stat-pill .val { font-family: var(--font); font-size: 0.9em; font-weight: 800; }
+.pill-streak .val { color: #FF9600; }
+.pill-xp .val { color: var(--gold); }
+.pill-hearts .val { color: #FF6B6B; }
+.nav-spacer { flex: 1; }
+.user-ava { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border2); object-fit: cover; }
+.user-ava-placeholder { width: 30px; height: 30px; border-radius: 50%; background: var(--c2); border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+/* ── QUEST BANNER ── */
+.quest-banner {
+  margin: 14px 14px 0; padding: 14px 16px;
+  background: var(--c1); border: 1px solid var(--border); border-radius: var(--radius);
+  cursor: pointer; transition: border-color .2s;
+}
+.quest-banner:hover { border-color: var(--gold-bg); }
+.quest-banner-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.quest-flame { font-size: 20px; }
+.quest-label { font-family: var(--font); font-size: 0.82em; font-weight: 800; color: var(--gold); letter-spacing: .5px; text-transform: uppercase; }
+.quest-sub { font-size: 0.75em; color: var(--t3); margin-left: auto; }
+.quest-bars { display: flex; gap: 5px; }
+.qbar { flex: 1; height: 8px; background: var(--c3); border-radius: 4px; overflow: hidden; position: relative; }
+.qbar-fill { height: 100%; border-radius: 4px; background: var(--gold); transition: width .6s cubic-bezier(.4,0,.2,1); }
+.qbar.done .qbar-fill { background: var(--g); }
+
+/* ── MAIN CONTENT ── */
+.main { max-width: 520px; margin: 0 auto; padding: 16px 14px 20px; }
+
+/* ── UNIT HEADER ── */
+.unit-header {
+  border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 6px;
+  position: relative; overflow: hidden;
+}
+.unit-header::before { content: ''; position: absolute; inset: 0; opacity: .08; }
+.unit-tag { font-family: var(--font); font-size: 0.72em; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; opacity: .75; margin-bottom: 4px; }
+.unit-name { font-family: var(--font); font-size: 1.2em; font-weight: 900; margin-bottom: 2px; }
+.unit-sub { font-size: 0.82em; color: var(--t2); }
+.unit-progress-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.unit-prog-track { flex: 1; height: 6px; background: rgba(255,255,255,.1); border-radius: 3px; overflow: hidden; }
+.unit-prog-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.unit-prog-label { font-family: var(--font); font-size: 0.72em; font-weight: 800; opacity: .65; white-space: nowrap; }
+
+/* ── LESSON PATH ── */
+.lesson-path { position: relative; padding: 10px 0 20px; }
+.lesson-path::before {
+  content: ''; position: absolute; left: 50%; transform: translateX(-50%);
+  top: 0; bottom: 0; width: 3px; background: var(--c2); border-radius: 2px; z-index: 0;
+}
+.lesson-node {
+  position: relative; z-index: 1; display: flex; justify-content: center;
+  margin-bottom: 12px;
+}
+.lesson-node:nth-child(even) { justify-content: calc(50% + 60px); margin-left: 50px; }
+.lesson-node:nth-child(odd):not(:first-child) { margin-right: 50px; justify-content: calc(50% - 60px); }
+
+.lesson-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; text-decoration: none; border: none; background: none;
+  padding: 4px; border-radius: 50%; transition: transform .15s;
+  outline: none;
+}
+.lesson-btn:active { transform: scale(.93); }
+.lesson-circle {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; position: relative;
+  box-shadow: 0 4px 0 rgba(0,0,0,.4), 0 0 0 3px rgba(255,255,255,.05);
+  transition: box-shadow .15s, transform .15s;
+}
+.lesson-btn:hover .lesson-circle { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,.4), 0 0 0 3px rgba(255,255,255,.08); }
+.lesson-circle.done { box-shadow: 0 4px 0 rgba(0,0,0,.4), 0 0 0 4px var(--g); }
+.lesson-circle.current { animation: nodePulse 2s ease-in-out infinite; }
+@keyframes nodePulse { 0%,100% { box-shadow: 0 4px 0 rgba(0,0,0,.4), 0 0 0 4px rgba(88,204,2,.4); } 50% { box-shadow: 0 4px 0 rgba(0,0,0,.4), 0 0 0 8px rgba(88,204,2,.15); } }
+.lesson-circle.locked { filter: grayscale(1) brightness(.5); cursor: not-allowed; }
+.lesson-badge {
+  position: absolute; top: -4px; right: -4px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--g); border: 2px solid var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 900;
+}
+.lesson-badge.lock { background: var(--c2); }
+.lesson-label { font-family: var(--font); font-size: 0.72em; font-weight: 800; color: var(--t2); text-align: center; max-width: 80px; line-height: 1.3; }
+.lesson-xp { font-family: var(--font); font-size: 0.65em; font-weight: 700; color: var(--gold); opacity: .8; }
+
+/* START button (current lesson) */
+.start-node .lesson-circle {
+  width: 84px; height: 84px; font-size: 32px;
+  background: var(--g) !important;
+}
+.start-node .lesson-circle::after {
+  content: '▶'; position: absolute; bottom: -28px;
+  background: var(--g); color: white; padding: 4px 18px; border-radius: 20px;
+  font-size: 11px; font-weight: 900; font-family: var(--font); letter-spacing: .5px;
+  box-shadow: 0 3px 0 var(--g-dk); white-space: nowrap;
+}
+
+/* ── UNIT CHEST ── */
+.unit-chest {
+  display: flex; justify-content: center; padding: 20px 0; position: relative; z-index: 1;
+}
+.chest-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  cursor: pointer; border: none; background: none; padding: 8px;
+  transition: transform .15s;
+}
+.chest-btn:hover { transform: scale(1.05); }
+.chest-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--gold-bg); border: 2px solid rgba(255,200,0,.3);
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+}
+.chest-icon.locked { filter: grayscale(1) brightness(.4); cursor: not-allowed; }
+.chest-label { font-family: var(--font); font-size: 0.72em; font-weight: 800; color: var(--gold); }
+
+/* ── STATS STRIP ── */
+.stats-strip { display: flex; gap: 10px; margin: 18px 0 4px; }
+.scard {
+  flex: 1; background: var(--c1); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 12px; text-align: center; position: relative; overflow: hidden;
+}
+.scard::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 3px 3px 0 0; }
+.scard.s-green::after { background: var(--g); }
+.scard.s-gold::after { background: var(--gold); }
+.scard.s-blue::after { background: var(--b); }
+.scard.s-red::after { background: var(--r); }
+.scard-val { font-family: var(--font); font-size: 1.6em; font-weight: 900; display: block; }
+.scard-lbl { font-size: 0.7em; color: var(--t3); font-weight: 600; margin-top: 2px; }
+
+/* ── ACHIEVEMENTS STRIP ── */
+.section-label { font-family: var(--font); font-size: 0.75em; font-weight: 800; color: var(--t3); letter-spacing: 1px; text-transform: uppercase; margin: 18px 0 10px; }
+.ach-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.ach-row::-webkit-scrollbar { display: none; }
+.ach-card {
+  flex-shrink: 0; background: var(--c1); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px; min-width: 130px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  transition: border-color .2s;
+}
+.ach-card.unlocked { border-color: rgba(255,200,0,.25); background: rgba(255,200,0,.04); }
+.ach-icon { font-size: 28px; }
+.ach-title { font-family: var(--font); font-size: 0.78em; font-weight: 800; color: var(--t1); line-height: 1.2; }
+.ach-desc { font-size: 0.68em; color: var(--t3); line-height: 1.4; }
+.ach-card.locked-ach { filter: grayscale(1); opacity: .4; }
+
+/* ── DAILY QUESTS DETAIL ── */
+.quest-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.quest-item {
+  background: var(--c1); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+}
+.quest-item.qdone { border-color: var(--g-border); background: var(--g-bg); }
+.quest-qi { font-size: 22px; }
+.quest-info { flex: 1; }
+.quest-title { font-family: var(--font); font-size: 0.88em; font-weight: 800; margin-bottom: 4px; }
+.quest-prog-row { display: flex; align-items: center; gap: 8px; }
+.quest-track { flex: 1; height: 6px; background: var(--c3); border-radius: 3px; overflow: hidden; }
+.quest-fill { height: 100%; border-radius: 3px; background: var(--g); transition: width .5s ease; }
+.quest-item.qdone .quest-fill { background: var(--g); }
+.quest-frac { font-family: var(--font); font-size: 0.68em; font-weight: 700; color: var(--t3); white-space: nowrap; }
+.quest-xp { font-family: var(--font); font-size: 0.72em; font-weight: 800; color: var(--gold); background: var(--gold-bg); padding: 3px 9px; border-radius: 10px; white-space: nowrap; }
+.quest-check { font-size: 20px; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  height: 70px; background: rgba(19,19,19,.97); border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 0 8px; padding-bottom: env(safe-area-inset-bottom);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+.bnav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  text-decoration: none; color: var(--t3); padding: 8px 12px; border-radius: 12px;
+  min-width: 52px; transition: color .15s, background .15s; border: none; background: none; cursor: pointer;
+  font-family: inherit;
+}
+.bnav-item.active { color: var(--g); background: var(--g-bg); }
+.bnav-item:hover:not(.active) { color: var(--t2); }
+.bnav-icon { font-size: 22px; }
+.bnav-label { font-family: var(--font); font-size: 0.6em; font-weight: 800; letter-spacing: .3px; }
+
+/* ── NO HEARTS MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500; display: flex; align-items: flex-end; justify-content: center; }
+.modal-overlay.hidden { display: none; }
+.modal-sheet {
+  background: var(--c1); border-radius: 24px 24px 0 0; padding: 28px 24px 32px;
+  width: 100%; max-width: 520px; border: 1px solid var(--border); border-bottom: none;
+  animation: slideUp .3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-icon { text-align: center; font-size: 48px; margin-bottom: 12px; }
+.modal-title { font-family: var(--font); font-size: 1.3em; font-weight: 900; text-align: center; margin-bottom: 6px; }
+.modal-sub { font-size: 0.88em; color: var(--t2); text-align: center; line-height: 1.5; margin-bottom: 20px; }
+.modal-btn { width: 100%; border-radius: 14px; padding: 14px; font-family: var(--font); font-size: 1em; font-weight: 800; border: none; cursor: pointer; margin-bottom: 8px; }
+.modal-btn.primary { background: var(--g); color: white; box-shadow: 0 4px 0 var(--g-dk); }
+.modal-btn.secondary { background: var(--c2); color: var(--t2); }
+
+/* ── XP POPUP ANIMATION ── */
+.xp-popup {
+  position: fixed; bottom: 90px; right: 20px; z-index: 300;
+  background: var(--gold); color: #1a1000; border-radius: 20px;
+  padding: 8px 18px; font-family: var(--font); font-weight: 900; font-size: 1.1em;
+  pointer-events: none; animation: xpFloat 1.5s ease forwards;
+}
+@keyframes xpFloat { 0%{opacity:0;transform:translateY(20px)} 20%{opacity:1;transform:translateY(0)} 80%{opacity:1;transform:translateY(-10px)} 100%{opacity:0;transform:translateY(-30px)} }
+
+/* ── CONFETTI ── */
+@keyframes confettiFall { 0%{opacity:1;transform:translateY(0) rotate(0deg)} 100%{opacity:0;transform:translateY(100vh) rotate(720deg)} }
+
+/* ── UNLOCK TOAST ── */
+.unlock-toast {
+  position: fixed; top: 72px; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: #1a1000; border-radius: 20px;
+  padding: 10px 22px; font-family: var(--font); font-weight: 800; font-size: 0.92em;
+  z-index: 400; white-space: nowrap; box-shadow: var(--shadow);
+  animation: toastIn .3s ease;
+  display: none;
+}
+.unlock-toast.show { display: block; }
+@keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+
+@media (min-width: 600px) {
+  .lesson-node:nth-child(even) { justify-content: calc(50% + 80px); margin-left: 70px; }
+  .lesson-node:nth-child(odd):not(:first-child) { margin-right: 70px; }
+}
+</style>
+</head>
+<body>
+
+<div class="unlock-toast" id="unlock-toast"></div>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <a href="/" class="nav-logo"><span class="flag">🇮🇹</span><strong>Zu<em>zu</em></strong></a>
+  <div class="stat-pill pill-streak" id="top-streak">
+    <span class="icon">🔥</span><span class="val" id="streak-val">0</span>
+  </div>
+  <div class="stat-pill pill-xp" id="top-xp">
+    <span class="icon">⚡</span><span class="val" id="xp-val">0</span>
+  </div>
+  <div class="stat-pill pill-hearts" id="top-hearts">
+    <span class="icon">❤️</span><span class="val" id="hearts-val">5</span>
+  </div>
+  <div class="nav-spacer"></div>
+  {% if user_picture %}
+  <img class="user-ava" src="{{ user_picture }}" referrerpolicy="no-referrer">
+  {% else %}
+  <div class="user-ava-placeholder">👤</div>
+  {% endif %}
+</nav>
+
+<!-- QUEST BANNER -->
+<div class="quest-banner" onclick="document.getElementById('quests-section').scrollIntoView({behavior:'smooth'})">
+  <div class="quest-banner-top">
+    <span class="quest-flame">🎯</span>
+    <span class="quest-label">Daily Quests</span>
+    <span class="quest-sub" id="quest-summary">0/3 done</span>
+  </div>
+  <div class="quest-bars" id="quest-bars">
+    <div class="qbar"><div class="qbar-fill" style="width:0%"></div></div>
+    <div class="qbar"><div class="qbar-fill" style="width:0%"></div></div>
+    <div class="qbar"><div class="qbar-fill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="learn-path"></div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="/" class="bnav-item active"><span class="bnav-icon">🏠</span><span class="bnav-label">Home</span></a>
+  <a href="/chat" class="bnav-item"><span class="bnav-icon">💬</span><span class="bnav-label">Chat</span></a>
+  <a href="/books" class="bnav-item"><span class="bnav-icon">📚</span><span class="bnav-label">Books</span></a>
+  <a href="/download" class="bnav-item"><span class="bnav-icon">📲</span><span class="bnav-label">App</span></a>
+  <button class="bnav-item" onclick="document.getElementById('profile-modal').classList.remove('hidden')">
+    <span class="bnav-icon">👤</span><span class="bnav-label">Profile</span>
+  </button>
+</nav>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay hidden" id="profile-modal" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="modal-sheet">
+    <div class="modal-icon">🇮🇹</div>
+    <div class="modal-title">{{ user_name.split()[0] }}'s Profile</div>
+    <div id="profile-stats" class="modal-sub"></div>
+    <a href="/chat"><button class="modal-btn primary">💬 Practice with Zuzu</button></a>
+    <a href="/logout"><button class="modal-btn secondary">Sign Out</button></a>
+  </div>
+</div>
+
+<script>
+const PROGRESS = {{ progress_json | safe }};
+const LESSONS  = {{ lessons_json | safe }};
+const UNITS    = {{ units_json | safe }};
+const ACHIEVEMENTS = {{ achievements_json | safe }};
+const DAILY_QUESTS = {{ quests_json | safe }};
+
+// ── Helpers ──
+const $ = id => document.getElementById(id);
+function fmt(n) { return n >= 1000 ? (n/1000).toFixed(1)+'k' : n; }
+
+// ── Boot ──
+function boot() {
+  updateHeader();
+  renderPath();
+  renderQuests();
+  renderProfileStats();
+}
+
+function updateHeader() {
+  $('streak-val').textContent = PROGRESS.streak || 0;
+  animateCounter($('xp-val'), 0, PROGRESS.xp || 0, 600);
+  $('hearts-val').textContent = PROGRESS.hearts ?? 5;
+}
+
+function animateCounter(el, from, to, dur) {
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min((now - start) / dur, 1);
+    el.textContent = Math.round(from + (to - from) * t);
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── Learning Path ──
+function renderPath() {
+  const container = $('learn-path');
+  const completed = PROGRESS.completed_lessons || [];
+
+  UNITS.forEach(unit => {
+    // Unit header
+    const lessons = LESSONS.filter(l => unit.lesson_ids.includes(l.id));
+    const unitDone = lessons.filter(l => completed.includes(l.id)).length;
+    const unitPct = lessons.length ? Math.round(unitDone / lessons.length * 100) : 0;
+
+    const hdr = document.createElement('div');
+    hdr.className = 'unit-header';
+    hdr.style.background = unit.color + '18';
+    hdr.style.border = '1px solid ' + unit.color + '30';
+    hdr.innerHTML = `
+      <div class="unit-tag" style="color:${unit.color}">Unit ${unit.id}</div>
+      <div class="unit-name">${unit.name}</div>
+      <div class="unit-sub">${unit.subtitle}</div>
+      ${lessons.length ? `<div class="unit-progress-row">
+        <div class="unit-prog-track"><div class="unit-prog-fill" style="width:${unitPct}%;background:${unit.color}"></div></div>
+        <div class="unit-prog-label" style="color:${unit.color}">${unitDone}/${lessons.length}</div>
+      </div>` : ''}`;
+    container.appendChild(hdr);
+
+    if (unit.locked || !lessons.length) {
+      const locked = document.createElement('div');
+      locked.style.cssText = 'text-align:center;padding:30px 20px;color:rgba(255,255,255,.25);font-family:var(--font);font-weight:800;font-size:.9em;';
+      locked.textContent = '🔒 Complete previous units to unlock';
+      container.appendChild(locked);
+      return;
+    }
+
+    // Lesson nodes
+    const path = document.createElement('div');
+    path.className = 'lesson-path';
+    lessons.forEach((lesson, i) => {
+      const isDone = completed.includes(lesson.id);
+      const prevDone = i === 0 || completed.includes(lessons[i-1].id);
+      const isCurrent = !isDone && prevDone;
+      const isLocked = !isDone && !prevDone;
+
+      const node = document.createElement('div');
+      node.className = 'lesson-node' + (isCurrent ? ' start-node' : '');
+      node.style.marginBottom = isCurrent ? '44px' : '';
+
+      const href = isLocked ? 'javascript:void(0)' : `/lesson/${lesson.id}`;
+      const circleClass = isDone ? 'done' : isCurrent ? 'current' : 'locked';
+      const badgeHtml = isDone
+        ? `<div class="lesson-badge">✓</div>`
+        : isLocked ? `<div class="lesson-badge lock">🔒</div>` : '';
+
+      node.innerHTML = `
+        <a class="lesson-btn" href="${href}" ${isLocked ? 'onclick="return false"' : ''}>
+          <div class="lesson-circle ${circleClass}" style="background:${isDone||isCurrent ? lesson.icon ? 'rgba(88,204,2,.15)' : '#1c1c1c' : '#1c1c1c'}">
+            ${lesson.icon}${badgeHtml}
+          </div>
+          <span class="lesson-label">${lesson.title}</span>
+          <span class="lesson-xp">+${lesson.xp_reward} XP</span>
+        </a>`;
+      path.appendChild(node);
+    });
+    container.appendChild(path);
+
+    // Unit chest
+    const chest = document.createElement('div');
+    chest.className = 'unit-chest';
+    const chestUnlocked = unitDone === lessons.length;
+    chest.innerHTML = `
+      <button class="chest-btn" ${!chestUnlocked ? 'disabled' : ''} onclick="${chestUnlocked ? 'chestCelebrate()' : ''}">
+        <div class="chest-icon ${chestUnlocked ? '' : 'locked'}">🎁</div>
+        <div class="chest-label">${chestUnlocked ? 'Unit Complete! +50 XP' : `${lessons.length - unitDone} lessons left`}</div>
+      </button>`;
+    container.appendChild(chest);
+  });
+
+  // Stats strip
+  const acc = PROGRESS.accuracy || 100;
+  const strip = document.createElement('div');
+  strip.className = 'stats-strip';
+  strip.innerHTML = `
+    <div class="scard s-green"><span class="scard-val">${PROGRESS.completed_lessons?.length||0}</span><span class="scard-lbl">Lessons</span></div>
+    <div class="scard s-gold"><span class="scard-val">${fmt(PROGRESS.xp||0)}</span><span class="scard-lbl">Total XP</span></div>
+    <div class="scard s-blue"><span class="scard-val">${acc}%</span><span class="scard-lbl">Accuracy</span></div>
+    <div class="scard s-red"><span class="scard-val">${PROGRESS.streak||0}🔥</span><span class="scard-lbl">Streak</span></div>`;
+  container.appendChild(strip);
+
+  // Achievements
+  renderAchievements(container);
+
+  // Quests section
+  const questSec = document.createElement('div');
+  questSec.id = 'quests-section';
+  const ql = document.createElement('div');
+  ql.className = 'section-label';
+  ql.textContent = 'Daily Quests';
+  questSec.appendChild(ql);
+  const questList = document.createElement('div');
+  questList.className = 'quest-list';
+  questList.id = 'quest-list-detail';
+  questSec.appendChild(questList);
+  container.appendChild(questSec);
+
+  // Profile section anchor
+  const profileSec = document.createElement('div');
+  profileSec.id = 'profile-section';
+  container.appendChild(profileSec);
+}
+
+function renderAchievements(container) {
+  const achieved = PROGRESS.achievements || [];
+  const lbl = document.createElement('div');
+  lbl.className = 'section-label';
+  lbl.textContent = 'Achievements';
+  container.appendChild(lbl);
+  const row = document.createElement('div');
+  row.className = 'ach-row';
+  ACHIEVEMENTS.forEach(a => {
+    const unlocked = achieved.includes(a.id);
+    const card = document.createElement('div');
+    card.className = 'ach-card' + (unlocked ? ' unlocked' : ' locked-ach');
+    card.innerHTML = `<span class="ach-icon">${a.icon}</span><div class="ach-title">${a.title}</div><div class="ach-desc">${a.desc}</div>`;
+    row.appendChild(card);
+  });
+  container.appendChild(row);
+  const lbl2 = document.createElement('div'); lbl2.style.marginBottom = '4px'; container.appendChild(lbl2);
+}
+
+function renderQuests() {
+  const q = PROGRESS.quests || {};
+  const done = PROGRESS.quests_done || [];
+  const bars = document.getElementById('quest-bars').children;
+  const listEl = document.getElementById('quest-list-detail');
+  if (listEl) listEl.innerHTML = '';
+  let completedCount = 0;
+
+  DAILY_QUESTS.forEach((quest, i) => {
+    const prog = q[quest.id] || 0;
+    const isDone = done.includes(quest.id);
+    if (isDone) completedCount++;
+    const pct = isDone ? 100 : Math.min(prog / quest.target * 100, 100);
+
+    // Banner bars
+    if (bars[i]) {
+      bars[i].className = 'qbar' + (isDone ? ' done' : '');
+      bars[i].querySelector('.qbar-fill').style.width = pct + '%';
+    }
+
+    // Detail list
+    if (listEl) {
+      const item = document.createElement('div');
+      item.className = 'quest-item' + (isDone ? ' qdone' : '');
+      item.innerHTML = `
+        <span class="quest-qi">${quest.icon}</span>
+        <div class="quest-info">
+          <div class="quest-title">${quest.title}</div>
+          <div class="quest-prog-row">
+            <div class="quest-track"><div class="quest-fill" style="width:${pct}%"></div></div>
+            <span class="quest-frac">${isDone ? '✓' : Math.min(prog, quest.target) + '/' + quest.target}</span>
+          </div>
+        </div>
+        <span class="quest-xp">+${quest.xp} XP</span>
+        ${isDone ? '<span class="quest-check">🎉</span>' : ''}`;
+      listEl.appendChild(item);
+    }
+  });
+
+  $('quest-summary').textContent = completedCount + '/3 done';
+}
+
+function renderProfileStats() {
+  const el = $('profile-stats');
+  if (!el) return;
+  el.innerHTML = `
+    ⚡ <strong>${PROGRESS.xp || 0} XP</strong> · 🔥 <strong>${PROGRESS.streak || 0} day streak</strong><br>
+    📚 <strong>${(PROGRESS.completed_lessons || []).length}/8 lessons</strong> · ❤️ <strong>${PROGRESS.hearts ?? 5}/5 hearts</strong><br>
+    🎯 Accuracy: <strong>${PROGRESS.accuracy || 100}%</strong>`;
+}
+
+function chestCelebrate() {
+  launchConfetti();
+  showXPPopup('+50 XP');
+}
+
+function showXPPopup(text) {
+  const el = document.createElement('div');
+  el.className = 'xp-popup';
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1600);
+}
+
+function showToast(text) {
+  const el = $('unlock-toast');
+  el.textContent = text;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function launchConfetti() {
+  const cols = ['#58CC02','#FFC800','#FF4B4B','#1CB0F6','#CE82FF','#FF9600'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      const size = 6 + Math.random() * 9;
+      el.style.cssText = `position:fixed;width:${size}px;height:${size}px;background:${cols[Math.floor(Math.random()*cols.length)]};left:${Math.random()*100}vw;top:-10px;border-radius:${Math.random()>.5?'50%':'2px'};z-index:9999;pointer-events:none;animation:confettiFall ${1.5+Math.random()*1.5}s ease-in forwards`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }, Math.random() * 600);
+  }
+}
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/static/sw.js');
+
+boot();
+</script>
+</body>
+</html>
