@@ -209,6 +209,14 @@ def reset():
     return jsonify({'status': 'reset'})
 
 
+@app.route('/download')
+def download():
+    return render_template('download.html',
+        user_name=session.get('user_name', ''),
+        user_picture=session.get('user_picture', '')
+    )
+
+
 @app.route('/books')
 @login_required
 def books():
