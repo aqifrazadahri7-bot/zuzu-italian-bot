@@ -479,10 +479,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100
     <!-- Vocabulary -->
     <div class="vocab-strip" id="vocabulary">
       <div class="section-hdr">
-        <span class="section-title">Vocabulary</span>
-        <a href="/books" class="section-link">Browse Stories →</a>
+        <span class="section-title">Vocabulary Bank</span>
+        <span class="section-link" id="vocab-count-label" style="font-family:var(--mono);color:var(--t3)"></span>
       </div>
+      <!-- Search -->
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:7px 12px">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="rgba(235,235,235,.35)" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/></svg>
+          <input id="vocab-search" type="text" placeholder="Search words…" style="background:none;border:none;outline:none;font-family:var(--font);font-size:.82em;color:var(--t1);width:100%" oninput="updateVocab()">
+        </div>
+      </div>
+      <!-- Category tabs -->
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px" id="vocab-cats"></div>
+      <!-- Words grid -->
       <div class="vocab-items" id="vocab-items"></div>
+      <div id="vocab-show-more" style="text-align:center;margin-top:12px;display:none">
+        <button onclick="showMoreVocab()" style="background:none;border:1px solid var(--border2);border-radius:var(--r);padding:7px 18px;font-family:var(--font);font-size:.78em;color:var(--t2);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='var(--border3)';this.style.color='var(--t1)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--t2)'">Show more words</button>
+      </div>
     </div>
 
     <!-- AdSense Banner Slot — activate by replacing ca-pub-XXXXXXXXXXXXXXXX -->
@@ -617,13 +630,244 @@ const ACHIEVEMENTS = {{ achievements_json | safe }};
 const QUESTS = {{ quests_json | safe }};
 const $ = id => document.getElementById(id);
 
-const VOCAB_SAMPLE = [
-  {it:"ciao",en:"hello/bye"},{it:"grazie",en:"thank you"},{it:"prego",en:"you're welcome"},
-  {it:"buongiorno",en:"good morning"},{it:"famiglia",en:"family"},{it:"padre",en:"father"},
-  {it:"madre",en:"mother"},{it:"cappuccino",en:"cappuccino"},{it:"quanto costa",en:"how much?"},
-  {it:"mi piace",en:"I like"},{it:"dov'è",en:"where is"},{it:"vorrei",en:"I'd like"},
-  {it:"bellissimo",en:"very beautiful"},{it:"pane",en:"bread"},{it:"vino",en:"wine"},
+const VOCAB_ALL = [
+  // Greetings & Basics
+  {it:"ciao",en:"hello / goodbye",lv:"A1",cat:"Greetings"},
+  {it:"buongiorno",en:"good morning",lv:"A1",cat:"Greetings"},
+  {it:"buonasera",en:"good evening",lv:"A1",cat:"Greetings"},
+  {it:"buonanotte",en:"good night",lv:"A1",cat:"Greetings"},
+  {it:"arrivederci",en:"goodbye (formal)",lv:"A1",cat:"Greetings"},
+  {it:"grazie",en:"thank you",lv:"A1",cat:"Greetings"},
+  {it:"prego",en:"you're welcome",lv:"A1",cat:"Greetings"},
+  {it:"per favore",en:"please",lv:"A1",cat:"Greetings"},
+  {it:"scusi",en:"excuse me (formal)",lv:"A1",cat:"Greetings"},
+  {it:"mi chiamo",en:"my name is",lv:"A1",cat:"Greetings"},
+  {it:"come stai?",en:"how are you? (informal)",lv:"A1",cat:"Greetings"},
+  {it:"sto bene",en:"I'm fine",lv:"A1",cat:"Greetings"},
+  {it:"piacere",en:"nice to meet you",lv:"A1",cat:"Greetings"},
+  {it:"sì",en:"yes",lv:"A1",cat:"Greetings"},
+  {it:"no",en:"no",lv:"A1",cat:"Greetings"},
+  // Numbers
+  {it:"uno",en:"one",lv:"A1",cat:"Numbers"},
+  {it:"due",en:"two",lv:"A1",cat:"Numbers"},
+  {it:"tre",en:"three",lv:"A1",cat:"Numbers"},
+  {it:"quattro",en:"four",lv:"A1",cat:"Numbers"},
+  {it:"cinque",en:"five",lv:"A1",cat:"Numbers"},
+  {it:"sei",en:"six",lv:"A1",cat:"Numbers"},
+  {it:"sette",en:"seven",lv:"A1",cat:"Numbers"},
+  {it:"otto",en:"eight",lv:"A1",cat:"Numbers"},
+  {it:"nove",en:"nine",lv:"A1",cat:"Numbers"},
+  {it:"dieci",en:"ten",lv:"A1",cat:"Numbers"},
+  {it:"venti",en:"twenty",lv:"A1",cat:"Numbers"},
+  {it:"trenta",en:"thirty",lv:"A1",cat:"Numbers"},
+  {it:"cento",en:"one hundred",lv:"A1",cat:"Numbers"},
+  {it:"primo",en:"first",lv:"A1",cat:"Numbers"},
+  {it:"secondo",en:"second",lv:"A1",cat:"Numbers"},
+  // Colors
+  {it:"rosso",en:"red",lv:"A1",cat:"Colors"},
+  {it:"blu",en:"blue",lv:"A1",cat:"Colors"},
+  {it:"verde",en:"green",lv:"A1",cat:"Colors"},
+  {it:"giallo",en:"yellow",lv:"A1",cat:"Colors"},
+  {it:"bianco",en:"white",lv:"A1",cat:"Colors"},
+  {it:"nero",en:"black",lv:"A1",cat:"Colors"},
+  {it:"arancione",en:"orange",lv:"A1",cat:"Colors"},
+  {it:"rosa",en:"pink",lv:"A1",cat:"Colors"},
+  {it:"viola",en:"purple",lv:"A1",cat:"Colors"},
+  {it:"grigio",en:"grey",lv:"A1",cat:"Colors"},
+  // Family
+  {it:"famiglia",en:"family",lv:"A1",cat:"Family"},
+  {it:"padre",en:"father",lv:"A1",cat:"Family"},
+  {it:"madre",en:"mother",lv:"A1",cat:"Family"},
+  {it:"fratello",en:"brother",lv:"A1",cat:"Family"},
+  {it:"sorella",en:"sister",lv:"A1",cat:"Family"},
+  {it:"figlio",en:"son",lv:"A1",cat:"Family"},
+  {it:"figlia",en:"daughter",lv:"A1",cat:"Family"},
+  {it:"nonno",en:"grandfather",lv:"A1",cat:"Family"},
+  {it:"nonna",en:"grandmother",lv:"A1",cat:"Family"},
+  {it:"zio",en:"uncle",lv:"A1",cat:"Family"},
+  {it:"zia",en:"aunt",lv:"A1",cat:"Family"},
+  {it:"cugino",en:"cousin (m)",lv:"A1",cat:"Family"},
+  {it:"marito",en:"husband",lv:"A2",cat:"Family"},
+  {it:"moglie",en:"wife",lv:"A2",cat:"Family"},
+  // Food & Drink
+  {it:"pane",en:"bread",lv:"A1",cat:"Food"},
+  {it:"acqua",en:"water",lv:"A1",cat:"Food"},
+  {it:"vino",en:"wine",lv:"A1",cat:"Food"},
+  {it:"caffè",en:"coffee",lv:"A1",cat:"Food"},
+  {it:"latte",en:"milk",lv:"A1",cat:"Food"},
+  {it:"cappuccino",en:"cappuccino",lv:"A1",cat:"Food"},
+  {it:"cornetto",en:"croissant",lv:"A1",cat:"Food"},
+  {it:"pizza",en:"pizza",lv:"A1",cat:"Food"},
+  {it:"pasta",en:"pasta",lv:"A1",cat:"Food"},
+  {it:"carne",en:"meat",lv:"A1",cat:"Food"},
+  {it:"pesce",en:"fish",lv:"A1",cat:"Food"},
+  {it:"verdura",en:"vegetables",lv:"A1",cat:"Food"},
+  {it:"frutta",en:"fruit",lv:"A1",cat:"Food"},
+  {it:"formaggio",en:"cheese",lv:"A1",cat:"Food"},
+  {it:"uovo",en:"egg",lv:"A1",cat:"Food"},
+  {it:"pollo",en:"chicken",lv:"A1",cat:"Food"},
+  {it:"gelato",en:"ice cream",lv:"A1",cat:"Food"},
+  {it:"bistecca",en:"steak",lv:"A2",cat:"Food"},
+  {it:"zucchero",en:"sugar",lv:"A1",cat:"Food"},
+  {it:"olio",en:"oil",lv:"A2",cat:"Food"},
+  {it:"sale",en:"salt",lv:"A1",cat:"Food"},
+  {it:"minestra",en:"soup",lv:"A2",cat:"Food"},
+  {it:"risotto",en:"risotto",lv:"A2",cat:"Food"},
+  {it:"tiramisù",en:"tiramisu",lv:"A2",cat:"Food"},
+  // At the Restaurant
+  {it:"ristorante",en:"restaurant",lv:"A1",cat:"Restaurant"},
+  {it:"cameriere",en:"waiter",lv:"A2",cat:"Restaurant"},
+  {it:"menu",en:"menu",lv:"A1",cat:"Restaurant"},
+  {it:"il conto",en:"the bill",lv:"A2",cat:"Restaurant"},
+  {it:"vorrei",en:"I would like",lv:"A2",cat:"Restaurant"},
+  {it:"mi piace",en:"I like",lv:"A1",cat:"Restaurant"},
+  {it:"mi piacciono",en:"I like (plural)",lv:"A2",cat:"Restaurant"},
+  {it:"antipasto",en:"starter",lv:"A2",cat:"Restaurant"},
+  {it:"primo piatto",en:"first course",lv:"A2",cat:"Restaurant"},
+  {it:"secondo piatto",en:"main course",lv:"A2",cat:"Restaurant"},
+  {it:"dolce",en:"dessert / sweet",lv:"A2",cat:"Restaurant"},
+  {it:"prenotazione",en:"reservation",lv:"A2",cat:"Restaurant"},
+  // Shopping
+  {it:"quanto costa?",en:"how much is it?",lv:"A1",cat:"Shopping"},
+  {it:"negozio",en:"shop / store",lv:"A1",cat:"Shopping"},
+  {it:"mercato",en:"market",lv:"A1",cat:"Shopping"},
+  {it:"caro",en:"expensive",lv:"A1",cat:"Shopping"},
+  {it:"economico",en:"cheap",lv:"A1",cat:"Shopping"},
+  {it:"taglia",en:"clothing size",lv:"A2",cat:"Shopping"},
+  {it:"camicia",en:"shirt",lv:"A2",cat:"Shopping"},
+  {it:"pantaloni",en:"trousers",lv:"A2",cat:"Shopping"},
+  {it:"scarpe",en:"shoes",lv:"A2",cat:"Shopping"},
+  {it:"vestito",en:"dress / suit",lv:"A2",cat:"Shopping"},
+  {it:"scontrino",en:"receipt",lv:"A2",cat:"Shopping"},
+  {it:"offerta",en:"offer / deal",lv:"A2",cat:"Shopping"},
+  // Travel
+  {it:"aeroporto",en:"airport",lv:"A2",cat:"Travel"},
+  {it:"stazione",en:"train station",lv:"A2",cat:"Travel"},
+  {it:"treno",en:"train",lv:"A1",cat:"Travel"},
+  {it:"autobus",en:"bus",lv:"A1",cat:"Travel"},
+  {it:"taxi",en:"taxi",lv:"A1",cat:"Travel"},
+  {it:"biglietto",en:"ticket",lv:"A2",cat:"Travel"},
+  {it:"valigia",en:"suitcase",lv:"A2",cat:"Travel"},
+  {it:"passaporto",en:"passport",lv:"A2",cat:"Travel"},
+  {it:"albergo",en:"hotel",lv:"A2",cat:"Travel"},
+  {it:"camera",en:"room",lv:"A2",cat:"Travel"},
+  {it:"prenotare",en:"to book / reserve",lv:"A2",cat:"Travel"},
+  {it:"destra",en:"right",lv:"A1",cat:"Travel"},
+  {it:"sinistra",en:"left",lv:"A1",cat:"Travel"},
+  {it:"dritto",en:"straight ahead",lv:"A1",cat:"Travel"},
+  {it:"vicino a",en:"near / next to",lv:"A2",cat:"Travel"},
+  {it:"lontano da",en:"far from",lv:"A2",cat:"Travel"},
+  // Home & Objects
+  {it:"casa",en:"house / home",lv:"A1",cat:"Home"},
+  {it:"appartamento",en:"apartment",lv:"A2",cat:"Home"},
+  {it:"cucina",en:"kitchen",lv:"A1",cat:"Home"},
+  {it:"bagno",en:"bathroom",lv:"A1",cat:"Home"},
+  {it:"camera da letto",en:"bedroom",lv:"A2",cat:"Home"},
+  {it:"salotto",en:"living room",lv:"A2",cat:"Home"},
+  {it:"tavolo",en:"table",lv:"A1",cat:"Home"},
+  {it:"sedia",en:"chair",lv:"A1",cat:"Home"},
+  {it:"finestra",en:"window",lv:"A1",cat:"Home"},
+  {it:"porta",en:"door",lv:"A1",cat:"Home"},
+  {it:"letto",en:"bed",lv:"A1",cat:"Home"},
+  {it:"telefono",en:"phone",lv:"A1",cat:"Home"},
+  {it:"chiave",en:"key",lv:"A2",cat:"Home"},
+  // Body & Health
+  {it:"testa",en:"head",lv:"A2",cat:"Health"},
+  {it:"occhi",en:"eyes",lv:"A1",cat:"Health"},
+  {it:"naso",en:"nose",lv:"A1",cat:"Health"},
+  {it:"bocca",en:"mouth",lv:"A1",cat:"Health"},
+  {it:"mano",en:"hand",lv:"A1",cat:"Health"},
+  {it:"piede",en:"foot",lv:"A1",cat:"Health"},
+  {it:"schiena",en:"back",lv:"A2",cat:"Health"},
+  {it:"stomaco",en:"stomach",lv:"A2",cat:"Health"},
+  {it:"mal di testa",en:"headache",lv:"A2",cat:"Health"},
+  {it:"febbre",en:"fever",lv:"A2",cat:"Health"},
+  {it:"medico",en:"doctor",lv:"A1",cat:"Health"},
+  {it:"farmacia",en:"pharmacy",lv:"A2",cat:"Health"},
+  {it:"mi sento male",en:"I feel ill",lv:"A2",cat:"Health"},
+  // Time & Days
+  {it:"oggi",en:"today",lv:"A1",cat:"Time"},
+  {it:"ieri",en:"yesterday",lv:"A1",cat:"Time"},
+  {it:"domani",en:"tomorrow",lv:"A1",cat:"Time"},
+  {it:"mattina",en:"morning",lv:"A1",cat:"Time"},
+  {it:"pomeriggio",en:"afternoon",lv:"A1",cat:"Time"},
+  {it:"sera",en:"evening",lv:"A1",cat:"Time"},
+  {it:"notte",en:"night",lv:"A1",cat:"Time"},
+  {it:"settimana",en:"week",lv:"A1",cat:"Time"},
+  {it:"mese",en:"month",lv:"A1",cat:"Time"},
+  {it:"anno",en:"year",lv:"A1",cat:"Time"},
+  {it:"lunedì",en:"Monday",lv:"A1",cat:"Time"},
+  {it:"martedì",en:"Tuesday",lv:"A1",cat:"Time"},
+  {it:"mercoledì",en:"Wednesday",lv:"A1",cat:"Time"},
+  {it:"giovedì",en:"Thursday",lv:"A1",cat:"Time"},
+  {it:"venerdì",en:"Friday",lv:"A1",cat:"Time"},
+  {it:"sabato",en:"Saturday",lv:"A1",cat:"Time"},
+  {it:"domenica",en:"Sunday",lv:"A1",cat:"Time"},
+  // Common Verbs
+  {it:"essere",en:"to be",lv:"A1",cat:"Verbs"},
+  {it:"avere",en:"to have",lv:"A1",cat:"Verbs"},
+  {it:"fare",en:"to do / make",lv:"A1",cat:"Verbs"},
+  {it:"andare",en:"to go",lv:"A1",cat:"Verbs"},
+  {it:"venire",en:"to come",lv:"A1",cat:"Verbs"},
+  {it:"parlare",en:"to speak",lv:"A1",cat:"Verbs"},
+  {it:"mangiare",en:"to eat",lv:"A1",cat:"Verbs"},
+  {it:"bere",en:"to drink",lv:"A1",cat:"Verbs"},
+  {it:"dormire",en:"to sleep",lv:"A1",cat:"Verbs"},
+  {it:"leggere",en:"to read",lv:"A1",cat:"Verbs"},
+  {it:"scrivere",en:"to write",lv:"A1",cat:"Verbs"},
+  {it:"capire",en:"to understand",lv:"A1",cat:"Verbs"},
+  {it:"sapere",en:"to know (fact)",lv:"A2",cat:"Verbs"},
+  {it:"potere",en:"can / to be able",lv:"A2",cat:"Verbs"},
+  {it:"dovere",en:"must / to have to",lv:"A2",cat:"Verbs"},
+  {it:"volere",en:"to want",lv:"A2",cat:"Verbs"},
+  {it:"comprare",en:"to buy",lv:"A1",cat:"Verbs"},
+  {it:"lavorare",en:"to work",lv:"A1",cat:"Verbs"},
+  {it:"studiare",en:"to study",lv:"A1",cat:"Verbs"},
+  {it:"sentirsi",en:"to feel",lv:"A2",cat:"Verbs"},
+  {it:"alzarsi",en:"to get up",lv:"A2",cat:"Verbs"},
+  {it:"chiamarsi",en:"to be called",lv:"A1",cat:"Verbs"},
+  {it:"piacere",en:"to like / please",lv:"A2",cat:"Verbs"},
+  // Adjectives
+  {it:"grande",en:"big / great",lv:"A1",cat:"Adjectives"},
+  {it:"piccolo",en:"small",lv:"A1",cat:"Adjectives"},
+  {it:"bello",en:"beautiful",lv:"A1",cat:"Adjectives"},
+  {it:"brutto",en:"ugly",lv:"A1",cat:"Adjectives"},
+  {it:"buono",en:"good",lv:"A1",cat:"Adjectives"},
+  {it:"cattivo",en:"bad",lv:"A1",cat:"Adjectives"},
+  {it:"nuovo",en:"new",lv:"A1",cat:"Adjectives"},
+  {it:"vecchio",en:"old",lv:"A1",cat:"Adjectives"},
+  {it:"caldo",en:"hot / warm",lv:"A1",cat:"Adjectives"},
+  {it:"freddo",en:"cold",lv:"A1",cat:"Adjectives"},
+  {it:"simpatico",en:"friendly / nice",lv:"A1",cat:"Adjectives"},
+  {it:"stanco",en:"tired",lv:"A2",cat:"Adjectives"},
+  {it:"felice",en:"happy",lv:"A1",cat:"Adjectives"},
+  {it:"triste",en:"sad",lv:"A2",cat:"Adjectives"},
+  {it:"difficile",en:"difficult",lv:"A2",cat:"Adjectives"},
+  {it:"facile",en:"easy",lv:"A2",cat:"Adjectives"},
+  {it:"interessante",en:"interesting",lv:"A2",cat:"Adjectives"},
+  {it:"delizioso",en:"delicious",lv:"A2",cat:"Adjectives"},
+  // B1 Expressions
+  {it:"secondo me",en:"in my opinion",lv:"B1",cat:"Expressions"},
+  {it:"penso che",en:"I think that",lv:"B1",cat:"Expressions"},
+  {it:"mi sembra",en:"it seems to me",lv:"B1",cat:"Expressions"},
+  {it:"d'accordo",en:"agreed / OK",lv:"B1",cat:"Expressions"},
+  {it:"però",en:"however / but",lv:"B1",cat:"Expressions"},
+  {it:"quindi",en:"so / therefore",lv:"B1",cat:"Expressions"},
+  {it:"invece",en:"instead / on the other hand",lv:"B1",cat:"Expressions"},
+  {it:"comunque",en:"anyway / however",lv:"B1",cat:"Expressions"},
+  {it:"spero che",en:"I hope that",lv:"B1",cat:"Expressions"},
+  {it:"mi dispiace",en:"I'm sorry",lv:"B1",cat:"Expressions"},
+  {it:"figurati",en:"don't mention it / no problem",lv:"B1",cat:"Expressions"},
+  {it:"davvero?",en:"really?",lv:"B1",cat:"Expressions"},
+  {it:"magari",en:"maybe / if only",lv:"B1",cat:"Expressions"},
+  {it:"in bocca al lupo",en:"good luck (lit. into the wolf's mouth)",lv:"B1",cat:"Expressions"},
+  {it:"crepi!",en:"thanks! (reply to in bocca al lupo)",lv:"B1",cat:"Expressions"},
 ];
+
+const VOCAB_CATS = ['All', ...new Set(VOCAB_ALL.map(v => v.cat))];
+let vocabFilter = 'All';
+let vocabSearch = '';
+const VOCAB_SAMPLE = VOCAB_ALL; // keep alias
 
 function timeGreeting() {
   const h = new Date().getHours();
@@ -779,15 +1023,54 @@ function renderAchievements() {
   });
 }
 
-function renderVocab() {
+let vocabShownCount = 40;
+
+function renderVocabCats() {
+  const container = $('vocab-cats');
+  if (!container) return;
+  VOCAB_CATS.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.style.cssText = `padding:4px 12px;border-radius:6px;font-size:.72em;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .12s;border:1px solid`;
+    const active = vocabFilter === cat;
+    btn.style.background = active ? 'var(--accent)' : 'var(--s2)';
+    btn.style.color = active ? 'white' : 'var(--t3)';
+    btn.style.borderColor = active ? 'var(--accent)' : 'var(--border2)';
+    btn.textContent = cat;
+    btn.onclick = () => { vocabFilter = cat; vocabShownCount = 40; renderVocabCats(); updateVocab(); };
+    container.appendChild(btn);
+  });
+}
+
+function updateVocab() {
+  vocabSearch = $('vocab-search')?.value.toLowerCase().trim() || '';
+  let list = VOCAB_ALL;
+  if (vocabFilter !== 'All') list = list.filter(v => v.cat === vocabFilter);
+  if (vocabSearch) list = list.filter(v => v.it.toLowerCase().includes(vocabSearch) || v.en.toLowerCase().includes(vocabSearch) || v.cat.toLowerCase().includes(vocabSearch));
   const items = $('vocab-items');
-  VOCAB_SAMPLE.forEach(v => {
+  items.innerHTML = '';
+  const shown = list.slice(0, vocabShownCount);
+  $('vocab-count-label').textContent = list.length + ' words';
+  shown.forEach(v => {
     const chip = document.createElement('div');
     chip.className = 'vocab-chip';
-    chip.innerHTML = `<span class="vc-it">${v.it}</span><span class="vc-en">${v.en}</span>`;
-    chip.onclick = () => { try { const u = new SpeechSynthesisUtterance(v.it); u.lang='it-IT'; u.rate=.85; speechSynthesis.speak(u); } catch(e){} };
+    const lvColor = v.lv === 'A1' ? 'var(--green)' : v.lv === 'A2' ? 'var(--b, #60a5fa)' : 'var(--purple)';
+    chip.innerHTML = `<span class="vc-it">${v.it}</span><span class="vc-en">${v.en}</span><span style="font-family:var(--mono);font-size:.62em;color:${lvColor};margin-left:2px;opacity:.7">${v.lv}</span>`;
+    chip.title = `${v.it} = ${v.en} (${v.cat})`;
+    chip.onclick = () => { try { const u = new SpeechSynthesisUtterance(v.it); u.lang='it-IT'; u.rate=.82; speechSynthesis.speak(u); } catch(e){} };
     items.appendChild(chip);
   });
+  const moreBtn = $('vocab-show-more');
+  if (moreBtn) moreBtn.style.display = list.length > vocabShownCount ? 'block' : 'none';
+}
+
+function showMoreVocab() {
+  vocabShownCount += 40;
+  updateVocab();
+}
+
+function renderVocab() {
+  renderVocabCats();
+  updateVocab();
 }
 
 function renderResources() {
