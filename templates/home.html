@@ -562,6 +562,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100
       </button>
     </div>
 
+    <!-- Share APK -->
+    <div style="margin-bottom:16px">
+      <div class="im-share-label" style="margin-bottom:8px">Share the Android app directly</div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;font-family:var(--mono);font-size:.72em;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          expo.dev/artifacts/eas/rUR4…apk
+        </div>
+        <button onclick="copyAPK()" id="copy-apk-btn" style="background:var(--s3);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;font-family:var(--font);font-size:.78em;font-weight:600;color:var(--t2);cursor:pointer;white-space:nowrap;transition:all .12s" onmouseover="this.style.background='var(--s4)'" onmouseout="this.style.background='var(--s3)'">Copy APK Link</button>
+      </div>
+      <div style="display:flex;gap:7px;margin-top:7px">
+        <a id="apk-whatsapp" href="#" target="_blank" rel="noopener"
+           style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);border-radius:var(--r);padding:8px;font-size:.78em;font-weight:600;color:#25D366;text-decoration:none;transition:all .12s"
+           onmouseover="this.style.background='rgba(37,211,102,.14)'" onmouseout="this.style.background='rgba(37,211,102,.08)'">
+          💬 Send APK via WhatsApp
+        </a>
+        <a id="apk-sms" href="#"
+           style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:8px 12px;font-size:.78em;font-weight:600;color:var(--t2);text-decoration:none;transition:all .12s"
+           onmouseover="this.style.borderColor='var(--border3)'" onmouseout="this.style.borderColor='var(--border2)'">
+          💬 SMS
+        </a>
+      </div>
+    </div>
+
     <div class="im-stats">
       <div class="im-stat">
         <span class="im-stat-val" id="ref-total">0</span>
@@ -858,6 +881,11 @@ async function openInvite() {
     const emailSubj = encodeURIComponent('You should try Zuzu for Italian');
     const emailBody = encodeURIComponent(`Hey!\n\nI've been learning Italian with Zuzu — it's free, gamified, and has an AI tutor that corrects your grammar. Check it out:\n\n${url}\n\nYou get a bonus 50 XP when you join through my link!`);
 
+    const APK_URL = 'https://expo.dev/artifacts/eas/rUR4tNTaiRXVHM7Aw1rkbJ.apk';
+    const apkMsg = encodeURIComponent(`Download Zuzu Italian app 🇮🇹 — free AI Italian tutor on Android!\n\n📲 Download APK: ${APK_URL}\n\n🌐 Or use web app: ${url}`);
+    document.getElementById('apk-whatsapp').href = `https://wa.me/?text=${apkMsg}`;
+    document.getElementById('apk-sms').href = `sms:?body=${apkMsg}`;
+
     document.getElementById('share-whatsapp').href = `https://wa.me/?text=${msg}`;
     document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${twitterMsg}`;
     document.getElementById('share-email').href = `mailto:?subject=${emailSubj}&body=${emailBody}`;
@@ -880,6 +908,16 @@ function copyLink() {
     btn.textContent = 'Copied!';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyAPK() {
+  const url = 'https://expo.dev/artifacts/eas/rUR4tNTaiRXVHM7Aw1rkbJ.apk';
+  navigator.clipboard?.writeText(url).then(() => {
+    const btn = document.getElementById('copy-apk-btn');
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'Copy APK Link'; btn.style.color = ''; }, 2000);
   });
 }
 

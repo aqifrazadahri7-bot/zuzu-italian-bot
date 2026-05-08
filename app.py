@@ -525,7 +525,8 @@ def reset():
 def download():
     return render_template('download.html',
         user_name=session.get('user_name', ''),
-        user_picture=session.get('user_picture', '')
+        user_picture=session.get('user_picture', ''),
+        apk_url='https://expo.dev/artifacts/eas/rUR4tNTaiRXVHM7Aw1rkbJ.apk'
     )
 
 
