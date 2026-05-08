@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Dashboard — Zuzu</title>
+<!-- Google AdSense — replace ca-pub-XXXXXXXXXXXXXXXX with your Publisher ID after approval -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="manifest" href="/static/manifest.json">
 <meta name="theme-color" content="#0C0C0C">
@@ -246,6 +248,30 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100
 .vc-it{font-weight:600;color:var(--t1)}
 .vc-en{color:var(--t3)}
 
+/* ── RESOURCE CARDS (affiliate) ── */
+.resources-section{margin-bottom:20px}
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.res-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,transform .12s;text-decoration:none;position:relative;overflow:hidden}
+.res-card:hover{border-color:var(--border3);transform:translateY(-1px)}
+.res-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px}
+.res-card.rc-blue::before{background:#3B82F6}
+.res-card.rc-green::before{background:var(--green)}
+.res-card.rc-amber::before{background:var(--amber)}
+.res-card.rc-purple::before{background:var(--purple)}
+.res-header{display:flex;align-items:center;gap:8px}
+.res-icon{font-size:18px}
+.res-name{font-size:.85em;font-weight:700;color:var(--t1)}
+.res-badge{margin-left:auto;font-family:var(--mono);font-size:.62em;font-weight:600;padding:2px 6px;border-radius:4px;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.res-badge.aff-amber{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border)}
+.res-desc{font-size:.78em;color:var(--t2);line-height:1.5;flex:1}
+.res-cta{display:flex;align-items:center;justify-content:space-between}
+.res-cta-text{font-size:.75em;font-weight:600;color:var(--accent)}
+.res-commission{font-family:var(--mono);font-size:.68em;color:var(--t3)}
+
+/* ── ADSENSE SLOT ── */
+.ad-slot{background:var(--s1);border:1px dashed var(--border2);border-radius:var(--r-lg);min-height:90px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;overflow:hidden}
+.ad-slot-placeholder{font-family:var(--mono);font-size:.7em;color:var(--t4);text-align:center;padding:16px}
+
 /* ── BOTTOM NAV (mobile) ── */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;height:60px;background:rgba(12,12,12,.95);border-top:1px solid var(--border);backdrop-filter:blur(12px);align-items:center;justify-content:space-around;padding:0 8px;padding-bottom:env(safe-area-inset-bottom)}
 .bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--t3);padding:6px 10px;border-radius:var(--r);min-width:48px;transition:color .12s;border:none;background:none;cursor:pointer;font-family:var(--font)}
@@ -262,6 +288,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .two-col{grid-template-columns:1fr}
   .ach-grid{grid-template-columns:repeat(4,1fr)}
+  .res-grid{grid-template-columns:1fr}
 }
 @media(max-width:768px){
   body{overflow:auto}
@@ -420,6 +447,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100
       <div class="vocab-items" id="vocab-items"></div>
     </div>
 
+    <!-- AdSense Banner Slot — activate by replacing ca-pub-XXXXXXXXXXXXXXXX -->
+    <div class="ad-slot" id="ad-banner">
+      <!-- <ins class="adsbygoogle" style="display:block;width:100%;min-height:90px"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="XXXXXXXXXX"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->
+      <div class="ad-slot-placeholder">AdSense banner — activate after approval<br>replace ca-pub-XXXXXXXXXXXXXXXX in home.html</div>
+    </div>
+
+    <!-- Affiliate Resources -->
+    <div class="resources-section">
+      <div class="section-hdr">
+        <span class="section-title">Recommended Resources</span>
+        <span class="section-link" style="color:var(--t4);font-size:.7em;font-family:var(--mono)">affiliate</span>
+      </div>
+      <div class="res-grid" id="res-grid"></div>
+    </div>
+
     <!-- Achievements -->
     <div>
       <div class="section-hdr"><span class="section-title">Achievements</span></div>
@@ -517,6 +564,7 @@ function boot() {
   renderGoals();
   renderAchievements();
   renderVocab();
+  renderResources();
 }
 
 function renderPath(completed) {
@@ -617,6 +665,65 @@ function renderVocab() {
     chip.innerHTML = `<span class="vc-it">${v.it}</span><span class="vc-en">${v.en}</span>`;
     chip.onclick = () => { try { const u = new SpeechSynthesisUtterance(v.it); u.lang='it-IT'; u.rate=.85; speechSynthesis.speak(u); } catch(e){} };
     items.appendChild(chip);
+  });
+}
+
+function renderResources() {
+  const grid = document.getElementById('res-grid');
+  if (!grid) return;
+
+  // REPLACE these hrefs with your actual affiliate links after signing up
+  const resources = [
+    {
+      icon: '🗣️', name: 'italki', color: 'rc-blue',
+      desc: 'Book a 1-on-1 lesson with a certified Italian tutor. Real conversation practice.',
+      cta: 'Find a tutor →',
+      commission: '$10 per signup',
+      badge: 'Popular',
+      badgeClass: '',
+      // TODO: replace with your italki affiliate link from https://www.italki.com/en/affiliates
+      href: 'https://www.italki.com/en/teacher/italian?utm_source=zuzu'
+    },
+    {
+      icon: '📱', name: 'Babbel', color: 'rc-green',
+      desc: 'Structured Italian courses built by linguists. Perfect complement to Zuzu.',
+      cta: 'Try Babbel →',
+      commission: '20% commission',
+      badge: 'Earn 20%',
+      badgeClass: 'aff-amber',
+      // TODO: replace with your Babbel affiliate link from https://www.babbel.com/affiliates
+      href: 'https://www.babbel.com/learn-italian?utm_source=zuzu'
+    },
+    {
+      icon: '📚', name: 'Amazon Books', color: 'rc-amber',
+      desc: 'Top-rated Italian grammar books, workbooks, and dictionaries.',
+      cta: 'Browse books →',
+      commission: '4–8% per sale',
+      badge: 'Easy money',
+      badgeClass: 'aff-amber',
+      // TODO: replace with your Amazon Associates link from https://affiliate-program.amazon.com
+      href: 'https://www.amazon.com/s?k=italian+language+learning+books&tag=YOURTAG-20'
+    },
+  ];
+
+  resources.forEach(r => {
+    const card = document.createElement('a');
+    card.className = `res-card ${r.color}`;
+    card.href = r.href;
+    card.target = '_blank';
+    card.rel = 'noopener';
+    card.innerHTML = `
+      <div class="res-header">
+        <span class="res-icon">${r.icon}</span>
+        <span class="res-name">${r.name}</span>
+        <span class="res-badge ${r.badgeClass}">${r.badge}</span>
+      </div>
+      <div class="res-desc">${r.desc}</div>
+      <div class="res-cta">
+        <span class="res-cta-text">${r.cta}</span>
+        <span class="res-commission">${r.commission}</span>
+      </div>`;
+    grid.appendChild(card);
   });
 }
 

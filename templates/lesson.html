@@ -203,6 +203,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;f
   <div class="co-stats" id="co-stats"></div>
   <div class="co-xp" id="co-xp"></div>
   <button class="co-btn" onclick="window.location.href='/'">Back to dashboard →</button>
+
+  <!-- Affiliate card — high intent moment after lesson -->
+  <div id="co-affiliate" style="width:100%;max-width:360px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-xl);padding:16px 18px;text-align:left;margin-top:4px;display:none">
+    <div style="font-size:.68em;font-weight:600;color:var(--t4);font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Level up faster</div>
+    <div style="font-size:.88em;font-weight:600;color:var(--t1);margin-bottom:4px">Practice with a real Italian tutor</div>
+    <div style="font-size:.78em;color:var(--t2);margin-bottom:12px;line-height:1.5">Book a 30-min conversation lesson on italki. 1,000+ certified Italian tutors from €5.</div>
+    <div style="display:flex;gap:8px">
+      <!-- TODO: replace href with your italki affiliate link -->
+      <a href="https://www.italki.com/en/teacher/italian" target="_blank" rel="noopener"
+         style="flex:1;background:var(--accent);color:white;border:none;border-radius:var(--r);padding:9px;font-family:var(--font);font-size:.82em;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:opacity .12s"
+         onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        Find a tutor →
+      </a>
+      <button onclick="document.getElementById('co-affiliate').style.display='none'"
+              style="background:none;border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;font-family:var(--font);font-size:.82em;color:var(--t3);cursor:pointer">
+        Maybe later
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- NO HEARTS -->
@@ -399,7 +418,12 @@ function complete(){
   const fin=S.xp+(perfect?5:0);
   document.getElementById('co-xp').textContent='+'+fin+' XP earned';
   confetti();
-  fetch('/api/complete-lesson',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lesson_id:LESSON.id,xp:fin,mistakes:S.mistakes,correct:S.correct})}).catch(()=>{});
+  fetch('/api/complete-lesson',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lesson_id:LESSON.id,xp:fin,mistakes:S.mistakes,correct:S.correct})})
+    .then(r=>r.json()).then(d=>{
+      // Show affiliate card after 2nd lesson or unit complete
+      const done=(d.completed_lessons||[]).length;
+      if(done>=2){const af=document.getElementById('co-affiliate');if(af)af.style.display='block';}
+    }).catch(()=>{});
 }
 
 function enterPractice(){S.practice=true;S.hearts=5;renderHearts();document.getElementById('noheart-sheet').classList.remove('show');}
